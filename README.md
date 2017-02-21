@@ -12,7 +12,7 @@ $ go get github.com/beme/abide
 
 2. Within your test function, capture the response to an http request, set a unique identifier, and assert.
 
-```
+```go
 func TestFunction(t *testing.T) {
   req := httptest.NewRequest("GET", "http://example.com/", nil)
   w := httptest.NewRecorder()
