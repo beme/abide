@@ -97,7 +97,7 @@ func createSnapshot(id, val string) (*Snapshot, error) {
 	snapshotPath := filepath.Join(dir, fmt.Sprintf("%s%s", pkg, snapshotExt))
 
 	var file *os.File
-	var snapshots SnapshotMap
+	var snapshots = make(SnapshotMap)
 	if len(files) == 0 {
 		file, err = os.Create(snapshotPath)
 		if err != nil {
