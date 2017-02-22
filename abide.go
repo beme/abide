@@ -1,70 +1,182 @@
 package abide
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 )
 
 var (
-	snapshots SnapshotMap
-	args      *arguments
+	args         *arguments
+	allSnapshots Snapshots
+)
+
+const (
+	snapshotsDir      = "__snapshots__"
+	snapshotExt       = ".snapshot"
+	snapshotSeparator = "/* snapshot */"
 )
 
 func init() {
-	// TODO:
-	//  - [ ] parse arguments
-	//  - [ ] find and load existing snapshots
+	// 1. Get arguments.
 	args = getArguments()
+
+	// 2. Load snapshots.
+	allSnapshots, _ = loadSnapshots()
 }
 
-func findExistingSnapshot(id string) (*Snapshot, error) {
-	var snapshot *Snapshot
+type SnapshotId string
+
+func (s *SnapshotId) IsValid() bool {
+	return true
+}
+
+type Snapshot struct {
+	Id    SnapshotId
+	Value string
+
+	path string
+}
+
+type Snapshots map[SnapshotId]*Snapshot
+
+func (s Snapshots) Save() error {
+	snapshotsByPath := map[string][]*Snapshot{}
+	for _, snapshot := range s {
+		_, ok := snapshotsByPath[snapshot.path]
+		if !ok {
+			snapshotsByPath[snapshot.path] = []*Snapshot{}
+		}
+		snapshotsByPath[snapshot.path] = append(snapshotsByPath[snapshot.path], snapshot)
+	}
+
+	for path, snapshots := range snapshotsByPath {
+		snapshotMap := Snapshots{}
+		for _, snapshot := range snapshots {
+			snapshotMap[snapshot.Id] = snapshot
+		}
+		data, err := Encode(snapshotMap)
+		if err != nil {
+			return err
+		}
+
+		err = ioutil.WriteFile(path, data, os.ModePerm)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func Decode(data []byte) (Snapshots, error) {
+	snapshots := make(Snapshots)
+
+	snapshotsStr := strings.Split(string(data), snapshotSeparator)
+	for _, s := range snapshotsStr {
+		if s == "" {
+			continue
+		}
+
+		components := strings.SplitAfterN(s, "\n", 3)
+		id := SnapshotId(strings.TrimSpace(strings.Trim(components[1], "\n")))
+		val := strings.TrimSpace(components[2])
+		snapshots[id] = &Snapshot{
+			Id:    id,
+			Value: val,
+		}
+	}
+
+	return snapshots, nil
+}
+
+func Encode(snapshots Snapshots) ([]byte, error) {
+	var buf bytes.Buffer
+	var err error
+
+	for _, s := range snapshots {
+		data := ""
+		data += snapshotSeparator + "\n"
+		data += string(s.Id) + "\n"
+		data += s.Value + "\n"
+
+		_, err = buf.WriteString(data)
+		if err != nil {
+			return []byte{}, err
+		}
+	}
+
+	return buf.Bytes(), nil
+}
+
+func loadSnapshots() (Snapshots, error) {
+	dir, err := findOrCreateSnapshotDirectory()
+	if err != nil {
+		return nil, err
+	}
+
+	files, err := ioutil.ReadDir(dir)
+	if err != nil {
+		return nil, err
+	}
+
+	paths := []string{}
+	for _, file := range files {
+		path := filepath.Join(dir, file.Name())
+		if filepath.Ext(path) == snapshotExt {
+			paths = append(paths, path)
+		}
+	}
+
+	return parseSnapshotsFromPaths(paths)
+}
+
+func getSnapshot(id SnapshotId) *Snapshot {
+	return allSnapshots[id]
+}
+
+func createSnapshot(id SnapshotId, value string) (*Snapshot, error) {
+	if !id.IsValid() {
+		return nil, ErrInvalidSnapshotId
+	}
 
 	dir, err := findOrCreateSnapshotDirectory()
 	if err != nil {
 		return nil, err
 	}
 
-	// search inside __snapshots__ dir.
-	files, err := ioutil.ReadDir(dir)
+	pkg, err := getTestingPackage()
 	if err != nil {
-		return nil, ErrUnableToReadSnapshotDirectory
+		return nil, err
 	}
 
-	snapshotPaths := []string{}
-	for _, file := range files {
-		path := filepath.Join(dir, file.Name())
-		if filepath.Ext(path) == snapshotExt {
-			snapshotPaths = append(snapshotPaths, path)
-		}
+	path := filepath.Join(dir, fmt.Sprintf("%s%s", pkg, snapshotExt))
+
+	snapshot := &Snapshot{
+		Id:    id,
+		Value: value,
+		path:  path,
+	}
+	allSnapshots[id] = snapshot
+
+	err = allSnapshots.Save()
+	if err != nil {
+		return nil, err
 	}
 
-	if len(snapshotPaths) > 0 {
-		snapshotMap, err := findSnapshots(snapshotPaths)
-		if err != nil {
-			return nil, err
-		}
-		var ok bool
-		snapshot, ok = snapshotMap[id]
-		if ok && snapshot != nil {
-			return snapshot, nil
-		}
-	}
-
-	return nil, nil
+	return snapshot, nil
 }
 
 func findOrCreateSnapshotDirectory() (string, error) {
-	// get location of tested file.
 	testingPath, err := getTestingPath()
 	if err != nil {
 		return "", ErrUnableToLocateTestPath
 	}
 
-	// search for __snapshots__ dir.
 	dir := filepath.Join(testingPath, snapshotsDir)
 	_, err = os.Stat(dir)
 	if os.IsNotExist(err) {
@@ -77,61 +189,8 @@ func findOrCreateSnapshotDirectory() (string, error) {
 	return dir, nil
 }
 
-func createSnapshot(id, val string) (*Snapshot, error) {
-	dir, err := findOrCreateSnapshotDirectory()
-	if err != nil {
-		return nil, err
-	}
-
-	pkg, err := getTestingPackage()
-	if err != nil {
-		return nil, err
-	}
-
-	// search inside __snapshots__ dir.
-	files, err := ioutil.ReadDir(dir)
-	if err != nil {
-		return nil, ErrUnableToReadSnapshotDirectory
-	}
-
-	snapshotPath := filepath.Join(dir, fmt.Sprintf("%s%s", pkg, snapshotExt))
-
-	var file *os.File
-	var snapshots = make(SnapshotMap)
-	if len(files) == 0 {
-		file, err = os.Create(snapshotPath)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		file, err = os.OpenFile(snapshotPath, os.O_WRONLY, os.ModePerm)
-		if err != nil {
-			return nil, err
-		}
-
-		snapshots, err = findSnapshots([]string{snapshotPath})
-		if err != nil {
-			return nil, err
-		}
-	}
-	defer file.Close()
-
-	snapshot := &Snapshot{
-		Id:    id,
-		Value: val,
-	}
-	snapshots[id] = snapshot
-
-	err = EncodeSnapshots(file, snapshots)
-	if err != nil {
-		return nil, err
-	}
-
-	return snapshot, nil
-}
-
-func findSnapshots(paths []string) (SnapshotMap, error) {
-	var snapshotMap = make(map[string]*Snapshot)
+func parseSnapshotsFromPaths(paths []string) (Snapshots, error) {
+	var snapshots = make(Snapshots)
 	var mutex = &sync.Mutex{}
 
 	var wg sync.WaitGroup
@@ -145,21 +204,27 @@ func findSnapshots(paths []string) (SnapshotMap, error) {
 				return
 			}
 
-			snapshots, err := DecodeSnapshots(file)
+			data, err := ioutil.ReadAll(file)
+			if err != nil {
+				return
+			}
+
+			s, err := Decode(data)
 			if err != nil {
 				return
 			}
 
 			mutex.Lock()
-			for id, snapshot := range snapshots {
-				snapshotMap[id] = snapshot
+			for id, snapshot := range s {
+				snapshot.path = p
+				snapshots[id] = snapshot
 			}
 			mutex.Unlock()
 		}(paths[i])
 	}
 	wg.Wait()
 
-	return snapshotMap, nil
+	return snapshots, nil
 }
 
 func getTestingPath() (string, error) {
@@ -172,8 +237,5 @@ func getTestingPackage() (string, error) {
 		return "", err
 	}
 
-	// TODO:
-	//  - parse go test method to figure out if a subdirectory
-	//    is being tested.
 	return filepath.Base(dir), nil
 }
