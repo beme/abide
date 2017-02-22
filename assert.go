@@ -17,9 +17,18 @@ func AssertHttpResponse(t *testing.T, id string, w *http.Response) {
 		t.Fatal(err)
 	}
 
-	if snapshot == nil || args.ShouldUpdate {
-		fmt.Println("Creating/updating snapshot")
-		snapshot, err = createSnapshot(SnapshotId(id), string(body))
+	if snapshot == nil {
+		fmt.Printf("Creating snapshot `%s`\n", id)
+		_, err = createSnapshot(SnapshotId(id), string(body))
+		if err != nil {
+			t.Fatal(err)
+		}
+		return
+	}
+
+	if snapshot != nil && args.ShouldUpdate {
+		fmt.Printf("Updating snapshot `%s`\n", id)
+		_, err = createSnapshot(SnapshotId(id), string(body))
 		if err != nil {
 			t.Fatal(err)
 		}
