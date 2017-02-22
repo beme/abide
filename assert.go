@@ -11,7 +11,7 @@ import (
 
 // AssertHTTPResponse asserts the value of an http.Response.
 func AssertHTTPResponse(t *testing.T, id string, w *http.Response) {
-	snapshot := getSnapshot(SnapshotID(id))
+	snapshot := getSnapshot(snapshotID(id))
 
 	body, err := httputil.DumpResponse(w, true)
 	if err != nil {
@@ -20,23 +20,23 @@ func AssertHTTPResponse(t *testing.T, id string, w *http.Response) {
 
 	if snapshot == nil {
 		fmt.Printf("Creating snapshot `%s`\n", id)
-		_, err = createSnapshot(SnapshotID(id), string(body))
+		_, err = createSnapshot(snapshotID(id), string(body))
 		if err != nil {
 			t.Fatal(err)
 		}
 		return
 	}
 
-	if snapshot != nil && args.ShouldUpdate {
+	if snapshot != nil && args.shouldUpdate {
 		fmt.Printf("Updating snapshot `%s`\n", id)
-		_, err = createSnapshot(SnapshotID(id), string(body))
+		_, err = createSnapshot(snapshotID(id), string(body))
 		if err != nil {
 			t.Fatal(err)
 		}
 		return
 	}
 
-	compareResults(t, string(body), snapshot.Value)
+	compareResults(t, string(body), snapshot.value)
 }
 
 func compareResults(t *testing.T, new, existing string) {

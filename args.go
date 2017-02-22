@@ -5,9 +5,7 @@ import (
 )
 
 type arguments struct {
-	// ShouldUpdate represents whether the snapshot should
-	// be updated if there is a diff.
-	ShouldUpdate bool
+	shouldUpdate bool
 }
 
 func getArguments() *arguments {

@@ -13,7 +13,7 @@ import (
 
 var (
 	args         *arguments
-	allSnapshots Snapshots
+	allSnapshots snapshots
 )
 
 const (
@@ -30,48 +30,47 @@ func init() {
 	allSnapshots, _ = loadSnapshots()
 }
 
-// SnapshotID represents the unique identifier for a snapshot.
-type SnapshotID string
+// snapshotID represents the unique identifier for a snapshot.
+type snapshotID string
 
-// IsValid verifies whether the SnapshotID is valid. An
+// isValid verifies whether the snapshotID is valid. An
 // identifier is considered invalid if it is already in use
 // or it is malformed.
-func (s *SnapshotID) IsValid() bool {
+func (s *snapshotID) isValid() bool {
 	return true
 }
 
-// Snapshot represents the expected value of a test, identified by an id.
-type Snapshot struct {
-	ID    SnapshotID
-	Value string
-
-	path string
+// snapshot represents the expected value of a test, identified by an id.
+type snapshot struct {
+	id    snapshotID
+	value string
+	path  string
 }
 
-// Snapshots represents a map of snapshots by id.
-type Snapshots map[SnapshotID]*Snapshot
+// snapshots represents a map of snapshots by id.
+type snapshots map[snapshotID]*snapshot
 
-// Save writes all snapshots to their designated files.
-func (s Snapshots) Save() error {
-	snapshotsByPath := map[string][]*Snapshot{}
-	for _, snapshot := range s {
-		_, ok := snapshotsByPath[snapshot.path]
+// save writes all snapshots to their designated files.
+func (s snapshots) save() error {
+	snapshotsByPath := map[string][]*snapshot{}
+	for _, snap := range s {
+		_, ok := snapshotsByPath[snap.path]
 		if !ok {
-			snapshotsByPath[snapshot.path] = []*Snapshot{}
+			snapshotsByPath[snap.path] = []*snapshot{}
 		}
-		snapshotsByPath[snapshot.path] = append(snapshotsByPath[snapshot.path], snapshot)
+		snapshotsByPath[snap.path] = append(snapshotsByPath[snap.path], snap)
 	}
 
-	for path, snapshots := range snapshotsByPath {
+	for path, snaps := range snapshotsByPath {
 		if path == "" {
 			continue
 		}
 
-		snapshotMap := Snapshots{}
-		for _, snapshot := range snapshots {
-			snapshotMap[snapshot.ID] = snapshot
+		snapshotMap := snapshots{}
+		for _, snap := range snaps {
+			snapshotMap[snap.id] = snap
 		}
-		data, err := Encode(snapshotMap)
+		data, err := encode(snapshotMap)
 		if err != nil {
 			return err
 		}
@@ -85,9 +84,9 @@ func (s Snapshots) Save() error {
 	return nil
 }
 
-// Decode decides a slice of bytes to retrieve a Snapshots object.
-func Decode(data []byte) (Snapshots, error) {
-	snapshots := make(Snapshots)
+// decode decides a slice of bytes to retrieve a Snapshots object.
+func decode(data []byte) (snapshots, error) {
+	snaps := make(snapshots)
 
 	snapshotsStr := strings.Split(string(data), snapshotSeparator)
 	for _, s := range snapshotsStr {
@@ -96,24 +95,24 @@ func Decode(data []byte) (Snapshots, error) {
 		}
 
 		components := strings.SplitAfterN(s, "\n", 2)
-		id := SnapshotID(strings.TrimSuffix(components[0], " */\n"))
+		id := snapshotID(strings.TrimSuffix(components[0], " */\n"))
 		val := strings.TrimSpace(components[1])
-		snapshots[id] = &Snapshot{
-			ID:    id,
-			Value: val,
+		snaps[id] = &snapshot{
+			id:    id,
+			value: val,
 		}
 	}
 
-	return snapshots, nil
+	return snaps, nil
 }
 
-// Encode encodes a Snapshots object into a slice of bytes.
-func Encode(snapshots Snapshots) ([]byte, error) {
+// encode encodes a snapshots object into a slice of bytes.
+func encode(snaps snapshots) ([]byte, error) {
 	var buf bytes.Buffer
 	var err error
 
 	ids := []string{}
-	for id := range snapshots {
+	for id := range snaps {
 		ids = append(ids, string(id))
 	}
 
@@ -121,10 +120,10 @@ func Encode(snapshots Snapshots) ([]byte, error) {
 
 	data := ""
 	for _, id := range ids {
-		s := snapshots[SnapshotID(id)]
+		s := snaps[snapshotID(id)]
 
-		data += fmt.Sprintf("%s%s", snapshotSeparator, string(s.ID)) + " */\n"
-		data += s.Value + "\n\n"
+		data += fmt.Sprintf("%s%s", snapshotSeparator, string(s.id)) + " */\n"
+		data += s.value + "\n\n"
 	}
 
 	_, err = buf.WriteString(strings.TrimSpace(data))
@@ -136,7 +135,7 @@ func Encode(snapshots Snapshots) ([]byte, error) {
 }
 
 // loadSnapshots loads all snapshots in the current directory.
-func loadSnapshots() (Snapshots, error) {
+func loadSnapshots() (snapshots, error) {
 	dir, err := findOrCreateSnapshotDirectory()
 	if err != nil {
 		return nil, err
@@ -158,14 +157,14 @@ func loadSnapshots() (Snapshots, error) {
 	return parseSnapshotsFromPaths(paths)
 }
 
-// getSnapshot retrieves a Snapshot by id.
-func getSnapshot(id SnapshotID) *Snapshot {
+// getSnapshot retrieves a snapshot by id.
+func getSnapshot(id snapshotID) *snapshot {
 	return allSnapshots[id]
 }
 
 // createSnapshot creates or updates a Snapshot.
-func createSnapshot(id SnapshotID, value string) (*Snapshot, error) {
-	if !id.IsValid() {
+func createSnapshot(id snapshotID, value string) (*snapshot, error) {
+	if !id.isValid() {
 		return nil, errInvalidSnapshotID
 	}
 
@@ -181,19 +180,19 @@ func createSnapshot(id SnapshotID, value string) (*Snapshot, error) {
 
 	path := filepath.Join(dir, fmt.Sprintf("%s%s", pkg, snapshotExt))
 
-	snapshot := &Snapshot{
-		ID:    id,
-		Value: value,
+	s := &snapshot{
+		id:    id,
+		value: value,
 		path:  path,
 	}
-	allSnapshots[id] = snapshot
+	allSnapshots[id] = s
 
-	err = allSnapshots.Save()
+	err = allSnapshots.save()
 	if err != nil {
 		return nil, err
 	}
 
-	return snapshot, nil
+	return s, nil
 }
 
 func findOrCreateSnapshotDirectory() (string, error) {
@@ -214,8 +213,8 @@ func findOrCreateSnapshotDirectory() (string, error) {
 	return dir, nil
 }
 
-func parseSnapshotsFromPaths(paths []string) (Snapshots, error) {
-	var snapshots = make(Snapshots)
+func parseSnapshotsFromPaths(paths []string) (snapshots, error) {
+	var snaps = make(snapshots)
 	var mutex = &sync.Mutex{}
 
 	var wg sync.WaitGroup
@@ -234,22 +233,22 @@ func parseSnapshotsFromPaths(paths []string) (Snapshots, error) {
 				return
 			}
 
-			s, err := Decode(data)
+			s, err := decode(data)
 			if err != nil {
 				return
 			}
 
 			mutex.Lock()
-			for id, snapshot := range s {
-				snapshot.path = p
-				snapshots[id] = snapshot
+			for id, snap := range s {
+				snap.path = p
+				snaps[id] = snap
 			}
 			mutex.Unlock()
 		}(paths[i])
 	}
 	wg.Wait()
 
-	return snapshots, nil
+	return snaps, nil
 }
 
 func getTestingPath() (string, error) {
