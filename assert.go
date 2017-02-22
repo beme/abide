@@ -10,19 +10,16 @@ import (
 )
 
 func AssertHttpResponse(t *testing.T, id string, w *http.Response) {
-	snapshot, err := findExistingSnapshot(id)
-	if err != nil {
-		t.Fatal(err)
-	}
+	snapshot := getSnapshot(SnapshotId(id))
 
 	body, err := httputil.DumpResponse(w, true)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if snapshot == nil {
-		fmt.Println("Creating new snapshot")
-		_, err = createSnapshot(id, string(body))
+	if snapshot == nil || args.ShouldUpdate {
+		fmt.Println("Creating/updating snapshot")
+		snapshot, err = createSnapshot(SnapshotId(id), string(body))
 		if err != nil {
 			t.Fatal(err)
 		}
