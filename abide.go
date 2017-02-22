@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 )
@@ -98,7 +99,16 @@ func Encode(snapshots Snapshots) ([]byte, error) {
 	var buf bytes.Buffer
 	var err error
 
-	for _, s := range snapshots {
+	ids := []string{}
+	for id := range snapshots {
+		ids = append(ids, string(id))
+	}
+
+	sort.Strings(ids)
+
+	for _, id := range ids {
+		s := snapshots[SnapshotId(id)]
+
 		data := ""
 		data += snapshotSeparator + "\n"
 		data += string(s.Id) + "\n"
