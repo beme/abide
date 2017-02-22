@@ -18,7 +18,7 @@ func TestFunction(t *testing.T) {
   w := httptest.NewRecorder()
   firstHandler(w, req)
   res := w.Result()
-  abide.AssertHttpResponse(t, "example route", res)
+  abide.AssertHTTPResponse(t, "example route", res)
 }
 ```
 
@@ -39,8 +39,7 @@ A snapshot is essentially a lock file for an http response. Instead of having to
 Here's an example snapshot:
 
 ```
-/* snapshot */
-example route
+/* snapshot: example route */
 HTTP/1.1 200 OK
 Connection: close
 Content-Type: application/json
