@@ -9,6 +9,7 @@ import (
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
+// AssertHttpResponse asserts the value of an http.Response.
 func AssertHttpResponse(t *testing.T, id string, w *http.Response) {
 	snapshot := getSnapshot(SnapshotId(id))
 

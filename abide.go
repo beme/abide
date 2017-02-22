@@ -30,12 +30,17 @@ func init() {
 	allSnapshots, _ = loadSnapshots()
 }
 
+// SnapshotId represents the unique identifier for a snapshot.
 type SnapshotId string
 
+// IsValid verifies whether the SnapshotId is valid. An
+// identifier is considered invalid if it is already in use
+// or it is malformed.
 func (s *SnapshotId) IsValid() bool {
 	return true
 }
 
+// Snapshot represents the expected value of a test, identified by an id.
 type Snapshot struct {
 	Id    SnapshotId
 	Value string
@@ -43,8 +48,10 @@ type Snapshot struct {
 	path string
 }
 
+// Snapshots represents a map of snapshots by id.
 type Snapshots map[SnapshotId]*Snapshot
 
+// Save writes all snapshots to their designated files.
 func (s Snapshots) Save() error {
 	snapshotsByPath := map[string][]*Snapshot{}
 	for _, snapshot := range s {
@@ -56,6 +63,10 @@ func (s Snapshots) Save() error {
 	}
 
 	for path, snapshots := range snapshotsByPath {
+		if path == "" {
+			continue
+		}
+
 		snapshotMap := Snapshots{}
 		for _, snapshot := range snapshots {
 			snapshotMap[snapshot.Id] = snapshot
@@ -74,6 +85,7 @@ func (s Snapshots) Save() error {
 	return nil
 }
 
+// Decode decides a slice of bytes to retrieve a Snapshots object.
 func Decode(data []byte) (Snapshots, error) {
 	snapshots := make(Snapshots)
 
@@ -95,6 +107,7 @@ func Decode(data []byte) (Snapshots, error) {
 	return snapshots, nil
 }
 
+// Encode encodes a Snapshots object into a slice of bytes.
 func Encode(snapshots Snapshots) ([]byte, error) {
 	var buf bytes.Buffer
 	var err error
@@ -122,6 +135,7 @@ func Encode(snapshots Snapshots) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// loadSnapshots loads all snapshots in the current directory.
 func loadSnapshots() (Snapshots, error) {
 	dir, err := findOrCreateSnapshotDirectory()
 	if err != nil {
@@ -144,10 +158,12 @@ func loadSnapshots() (Snapshots, error) {
 	return parseSnapshotsFromPaths(paths)
 }
 
+// getSnapshot retrieves a Snapshot by id.
 func getSnapshot(id SnapshotId) *Snapshot {
 	return allSnapshots[id]
 }
 
+// createSnapshot creates or updates a Snapshot.
 func createSnapshot(id SnapshotId, value string) (*Snapshot, error) {
 	if !id.IsValid() {
 		return nil, ErrInvalidSnapshotId
