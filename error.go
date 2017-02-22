@@ -5,10 +5,9 @@ import (
 )
 
 var (
-	ErrUnableToLocateTestPath          = errors.New("unable to locate test path")
-	ErrUnableToCreateSnapshotDirectory = errors.New("unable to create snapshot directory")
-	ErrUnableToReadSnapshotDirectory   = errors.New("unable to read snapshot directory")
-	ErrUnableToLocateSnapshotById      = errors.New("unable to locate snapshot by id")
-
-	ErrInvalidSnapshotId = errors.New("invalid snapshot id")
+	errUnableToLocateTestPath          = errors.New("unable to locate test path")
+	errUnableToCreateSnapshotDirectory = errors.New("unable to create snapshot directory")
+	errUnableToReadSnapshotDirectory   = errors.New("unable to read snapshot directory")
+	errUnableToLocateSnapshotByID      = errors.New("unable to locate snapshot by id")
+	errInvalidSnapshotID               = errors.New("invalid snapshot id")
 )

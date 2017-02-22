@@ -9,9 +9,9 @@ import (
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
-// AssertHttpResponse asserts the value of an http.Response.
-func AssertHttpResponse(t *testing.T, id string, w *http.Response) {
-	snapshot := getSnapshot(SnapshotId(id))
+// AssertHTTPResponse asserts the value of an http.Response.
+func AssertHTTPResponse(t *testing.T, id string, w *http.Response) {
+	snapshot := getSnapshot(SnapshotID(id))
 
 	body, err := httputil.DumpResponse(w, true)
 	if err != nil {
@@ -20,7 +20,7 @@ func AssertHttpResponse(t *testing.T, id string, w *http.Response) {
 
 	if snapshot == nil {
 		fmt.Printf("Creating snapshot `%s`\n", id)
-		_, err = createSnapshot(SnapshotId(id), string(body))
+		_, err = createSnapshot(SnapshotID(id), string(body))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -29,7 +29,7 @@ func AssertHttpResponse(t *testing.T, id string, w *http.Response) {
 
 	if snapshot != nil && args.ShouldUpdate {
 		fmt.Printf("Updating snapshot `%s`\n", id)
-		_, err = createSnapshot(SnapshotId(id), string(body))
+		_, err = createSnapshot(SnapshotID(id), string(body))
 		if err != nil {
 			t.Fatal(err)
 		}

@@ -30,26 +30,26 @@ func init() {
 	allSnapshots, _ = loadSnapshots()
 }
 
-// SnapshotId represents the unique identifier for a snapshot.
-type SnapshotId string
+// SnapshotID represents the unique identifier for a snapshot.
+type SnapshotID string
 
-// IsValid verifies whether the SnapshotId is valid. An
+// IsValid verifies whether the SnapshotID is valid. An
 // identifier is considered invalid if it is already in use
 // or it is malformed.
-func (s *SnapshotId) IsValid() bool {
+func (s *SnapshotID) IsValid() bool {
 	return true
 }
 
 // Snapshot represents the expected value of a test, identified by an id.
 type Snapshot struct {
-	Id    SnapshotId
+	ID    SnapshotID
 	Value string
 
 	path string
 }
 
 // Snapshots represents a map of snapshots by id.
-type Snapshots map[SnapshotId]*Snapshot
+type Snapshots map[SnapshotID]*Snapshot
 
 // Save writes all snapshots to their designated files.
 func (s Snapshots) Save() error {
@@ -69,7 +69,7 @@ func (s Snapshots) Save() error {
 
 		snapshotMap := Snapshots{}
 		for _, snapshot := range snapshots {
-			snapshotMap[snapshot.Id] = snapshot
+			snapshotMap[snapshot.ID] = snapshot
 		}
 		data, err := Encode(snapshotMap)
 		if err != nil {
@@ -96,10 +96,10 @@ func Decode(data []byte) (Snapshots, error) {
 		}
 
 		components := strings.SplitAfterN(s, "\n", 2)
-		id := SnapshotId(strings.TrimSuffix(components[0], " */\n"))
+		id := SnapshotID(strings.TrimSuffix(components[0], " */\n"))
 		val := strings.TrimSpace(components[1])
 		snapshots[id] = &Snapshot{
-			Id:    id,
+			ID:    id,
 			Value: val,
 		}
 	}
@@ -121,9 +121,9 @@ func Encode(snapshots Snapshots) ([]byte, error) {
 
 	data := ""
 	for _, id := range ids {
-		s := snapshots[SnapshotId(id)]
+		s := snapshots[SnapshotID(id)]
 
-		data += fmt.Sprintf("%s%s", snapshotSeparator, string(s.Id)) + " */\n"
+		data += fmt.Sprintf("%s%s", snapshotSeparator, string(s.ID)) + " */\n"
 		data += s.Value + "\n\n"
 	}
 
@@ -159,14 +159,14 @@ func loadSnapshots() (Snapshots, error) {
 }
 
 // getSnapshot retrieves a Snapshot by id.
-func getSnapshot(id SnapshotId) *Snapshot {
+func getSnapshot(id SnapshotID) *Snapshot {
 	return allSnapshots[id]
 }
 
 // createSnapshot creates or updates a Snapshot.
-func createSnapshot(id SnapshotId, value string) (*Snapshot, error) {
+func createSnapshot(id SnapshotID, value string) (*Snapshot, error) {
 	if !id.IsValid() {
-		return nil, ErrInvalidSnapshotId
+		return nil, errInvalidSnapshotID
 	}
 
 	dir, err := findOrCreateSnapshotDirectory()
@@ -182,7 +182,7 @@ func createSnapshot(id SnapshotId, value string) (*Snapshot, error) {
 	path := filepath.Join(dir, fmt.Sprintf("%s%s", pkg, snapshotExt))
 
 	snapshot := &Snapshot{
-		Id:    id,
+		ID:    id,
 		Value: value,
 		path:  path,
 	}
@@ -199,7 +199,7 @@ func createSnapshot(id SnapshotId, value string) (*Snapshot, error) {
 func findOrCreateSnapshotDirectory() (string, error) {
 	testingPath, err := getTestingPath()
 	if err != nil {
-		return "", ErrUnableToLocateTestPath
+		return "", errUnableToLocateTestPath
 	}
 
 	dir := filepath.Join(testingPath, snapshotsDir)
@@ -207,7 +207,7 @@ func findOrCreateSnapshotDirectory() (string, error) {
 	if os.IsNotExist(err) {
 		err = os.Mkdir(dir, os.ModePerm)
 		if err != nil {
-			return "", ErrUnableToCreateSnapshotDirectory
+			return "", errUnableToCreateSnapshotDirectory
 		}
 	}
 
