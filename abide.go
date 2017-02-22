@@ -19,7 +19,7 @@ var (
 const (
 	snapshotsDir      = "__snapshots__"
 	snapshotExt       = ".snapshot"
-	snapshotSeparator = "/* snapshot */"
+	snapshotSeparator = "/* snapshot: "
 )
 
 func init() {
@@ -83,9 +83,9 @@ func Decode(data []byte) (Snapshots, error) {
 			continue
 		}
 
-		components := strings.SplitAfterN(s, "\n", 3)
-		id := SnapshotId(strings.TrimSpace(strings.Trim(components[1], "\n")))
-		val := strings.TrimSpace(components[2])
+		components := strings.SplitAfterN(s, "\n", 2)
+		id := SnapshotId(strings.TrimSuffix(components[0], " */\n"))
+		val := strings.TrimSpace(components[1])
 		snapshots[id] = &Snapshot{
 			Id:    id,
 			Value: val,
@@ -106,18 +106,17 @@ func Encode(snapshots Snapshots) ([]byte, error) {
 
 	sort.Strings(ids)
 
+	data := ""
 	for _, id := range ids {
 		s := snapshots[SnapshotId(id)]
 
-		data := ""
-		data += snapshotSeparator + "\n"
-		data += string(s.Id) + "\n"
-		data += s.Value + "\n"
+		data += fmt.Sprintf("%s%s", snapshotSeparator, string(s.Id)) + " */\n"
+		data += s.Value + "\n\n"
+	}
 
-		_, err = buf.WriteString(data)
-		if err != nil {
-			return []byte{}, err
-		}
+	_, err = buf.WriteString(strings.TrimSpace(data))
+	if err != nil {
+		return nil, err
 	}
 
 	return buf.Bytes(), nil

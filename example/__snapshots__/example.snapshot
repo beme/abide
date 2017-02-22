@@ -1,12 +1,11 @@
-/* snapshot */
-first route
+/* snapshot: first route */
 HTTP/1.1 200 OK
 Connection: close
 Content-Type: application/json
 
 {"key":"value"}
-/* snapshot */
-second route
+
+/* snapshot: second route */
 HTTP/1.1 200 OK
 Connection: close
 Content-Type: application/json
