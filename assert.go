@@ -36,13 +36,13 @@ func AssertHTTPResponse(t *testing.T, id string, w *http.Response) {
 		return
 	}
 
-	compareResults(t, string(body), snapshot.value)
+	compareResults(t, snapshot.value, string(body))
 }
 
-func compareResults(t *testing.T, new, existing string) {
+func compareResults(t *testing.T, existing, new string) {
 	dmp := diffmatchpatch.New()
 	dmp.PatchMargin = 20
-	allDiffs := dmp.DiffMain(new, existing, false)
+	allDiffs := dmp.DiffMain(existing, new, false)
 	nonEqualDiffs := []diffmatchpatch.Diff{}
 	for _, diff := range allDiffs {
 		if diff.Type != diffmatchpatch.DiffEqual {
