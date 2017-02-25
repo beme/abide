@@ -44,7 +44,9 @@ HTTP/1.1 200 OK
 Connection: close
 Content-Type: application/json
 
-{"key":"value"}
+{
+  "key": "value"
+}
 ```
 
 Snapshots are located within `project/__snapshots__`.
