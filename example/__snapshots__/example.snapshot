@@ -3,11 +3,20 @@ HTTP/1.1 200 OK
 Connection: close
 Content-Type: application/json
 
-{"key":"value"}
+{
+  "A": {
+    "B": [
+      "foo",
+      "bar"
+    ]
+  }
+}
 
 /* snapshot: second route */
 HTTP/1.1 200 OK
 Connection: close
 Content-Type: application/json
 
-{"key":1}
+{
+  "key": 1
+}
