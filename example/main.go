@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 )
 
 func firstHandler(w http.ResponseWriter, r *http.Request) {
@@ -23,8 +24,9 @@ func firstHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func secondHandler(w http.ResponseWriter, r *http.Request) {
-	data := map[string]int{
-		"key": 1,
+	data := map[string]interface{}{
+		"key":        1,
+		"updated_at": time.Now().Unix(),
 	}
 
 	body, err := json.Marshal(data)
