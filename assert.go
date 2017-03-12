@@ -1,7 +1,6 @@
 package abide
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -14,6 +13,11 @@ import (
 
 // AssertHTTPResponse asserts the value of an http.Response.
 func AssertHTTPResponse(t *testing.T, id string, w *http.Response) {
+	config, err := getConfig()
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	snapshot := getSnapshot(snapshotID(id))
 
 	body, err := httputil.DumpResponse(w, true)
@@ -28,12 +32,27 @@ func AssertHTTPResponse(t *testing.T, id string, w *http.Response) {
 		lines := strings.Split(data, "\n")
 		jsonStr := lines[len(lines)-1]
 
-		var out bytes.Buffer
-		err = json.Indent(&out, []byte(jsonStr), "", "  ")
+		var jsonIface map[string]interface{}
+		err = json.Unmarshal([]byte(jsonStr), &jsonIface)
 		if err != nil {
 			t.Fatal(err)
 		}
-		lines[len(lines)-1] = out.String()
+
+		// Clean/update json based on config.
+		// TODO: handle nested keys.
+		for jsonK := range jsonIface {
+			for k, v := range config.Defaults {
+				if jsonK == k {
+					jsonIface[jsonK] = v
+				}
+			}
+		}
+
+		out, err := json.MarshalIndent(jsonIface, "", "  ")
+		if err != nil {
+			t.Fatal(err)
+		}
+		lines[len(lines)-1] = string(out)
 		data = strings.Join(lines, "\n")
 	}
 
