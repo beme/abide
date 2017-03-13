@@ -40,7 +40,6 @@ func AssertHTTPResponse(t *testing.T, id string, w *http.Response) {
 		}
 
 		// Clean/update json based on config.
-		// TODO: handle nested keys.
 		for k, v := range config.Defaults {
 			jsonIface = internal.UpdateKeyValuesInMap(k, v, jsonIface)
 		}

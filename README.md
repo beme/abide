@@ -54,3 +54,18 @@ Snapshots are located within `project/__snapshots__`.
 ## Example
 
 See `/example` for the usage of `abide` in a basic web server. To run tests, simply `$ go test -v`
+
+## Config
+
+In some cases, attributes in a JSON response can by dynamic (e.g unique id's, dates, etc.), which can disrupt snapshot testing. To resolve this, an `abide.json` file config file can be included to override values with defaults. Consider the config in the supplied example project:
+
+```json
+{
+  "defaults": {
+    "updated_at": 0,
+    "foo": "foobar"
+  }
+}
+```
+
+For any JSON response, the key-value pairs in `defaults` will be used to override, allowing for consistent snapshot testing.
