@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/beme/abide/internal"
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
@@ -40,12 +41,8 @@ func AssertHTTPResponse(t *testing.T, id string, w *http.Response) {
 
 		// Clean/update json based on config.
 		// TODO: handle nested keys.
-		for jsonK := range jsonIface {
-			for k, v := range config.Defaults {
-				if jsonK == k {
-					jsonIface[jsonK] = v
-				}
-			}
+		for k, v := range config.Defaults {
+			jsonIface = internal.UpdateKeyValuesInMap(k, v, jsonIface)
 		}
 
 		out, err := json.MarshalIndent(jsonIface, "", "  ")
