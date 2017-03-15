@@ -18,5 +18,10 @@ Connection: close
 Content-Type: application/json
 
 {
-  "key": 1
+  "foo": "foobar",
+  "key": 1,
+  "stats": {
+    "created_at": 1489345012,
+    "updated_at": 0
+  }
 }
