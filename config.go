@@ -25,7 +25,7 @@ func getConfig() (*config, error) {
 
 func parseConfig(path string) (*config, error) {
 	file, err := os.Open(path)
-	if err == os.ErrNotExist {
+	if os.IsNotExist(err) {
 		return nil, nil
 	} else if err != nil {
 		return nil, err
