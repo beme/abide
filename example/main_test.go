@@ -19,4 +19,10 @@ func TestFunction(t *testing.T) {
 	secondHandler(w, req)
 	res = w.Result()
 	abide.AssertHTTPResponse(t, "second route", res)
+
+	req = httptest.NewRequest("GET", "http://example.com/", nil)
+	w = httptest.NewRecorder()
+	thirdHandler(w, req)
+	res = w.Result()
+	abide.AssertHTTPResponse(t, "third route", res)
 }
