@@ -70,7 +70,7 @@ func AssertHTTPResponse(t *testing.T, id string, w *http.Response) {
 		return
 	}
 
-	compareResults(t, snapshot.value, data)
+	compareResults(t, snapshot.value, strings.TrimSpace(data))
 }
 
 func compareResults(t *testing.T, existing, new string) {
