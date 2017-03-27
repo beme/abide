@@ -12,6 +12,35 @@ import (
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
+type Assertable interface {
+	String() string
+}
+
+func Assert(t *testing.T, id string, a Assertable) {
+	data := a.String()
+	snapshot := getSnapshot(snapshotID(id))
+
+	if snapshot == nil {
+		fmt.Printf("Creating snapshot `%s`\n", id)
+		_, err := createSnapshot(snapshotID(id), data)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return
+	}
+
+	if snapshot != nil && args.shouldUpdate {
+		fmt.Printf("Updating snapshot `%s`\n", id)
+		_, err := createSnapshot(snapshotID(id), data)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return
+	}
+
+	compareResults(t, snapshot.value, data)
+}
+
 // AssertHTTPResponse asserts the value of an http.Response.
 func AssertHTTPResponse(t *testing.T, id string, w *http.Response) {
 	config, err := getConfig()
