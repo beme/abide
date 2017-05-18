@@ -69,8 +69,10 @@ func AssertHTTPResponse(t *testing.T, id string, w *http.Response) {
 		}
 
 		// Clean/update json based on config.
-		for k, v := range config.Defaults {
-			jsonIface = internal.UpdateKeyValuesInMap(k, v, jsonIface)
+		if config != nil {
+			for k, v := range config.Defaults {
+				jsonIface = internal.UpdateKeyValuesInMap(k, v, jsonIface)
+			}
 		}
 
 		out, err := json.MarshalIndent(jsonIface, "", "  ")
