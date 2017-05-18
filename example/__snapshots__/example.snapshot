@@ -26,6 +26,11 @@ Content-Type: application/json
   "key": 1,
   "stats": {
     "created_at": 1489345012,
+    "things": [
+      {
+        "updated_at": 0
+      }
+    ],
     "updated_at": 0
   }
 }

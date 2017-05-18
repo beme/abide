@@ -11,6 +11,11 @@ func TestUpdateKeyValuesInMap(t *testing.T) {
 			"C": map[string]interface{}{
 				"B": 2,
 			},
+			"D": []interface{}{
+				map[string]interface{}{
+					"B": 3,
+				},
+			},
 		},
 		"B": 3,
 	}
@@ -24,8 +29,12 @@ func TestUpdateKeyValuesInMap(t *testing.T) {
 	if b1 != 0 {
 		t.Fatalf("Expected 0, instead got %d.", b2)
 	}
-	b3 := newM["B"].(int)
+	b3 := newM["A"].(map[string]interface{})["D"].([]interface{})[0].(map[string]interface{})["B"].(int)
 	if b3 != 0 {
 		t.Fatalf("Expected 0, instead got %d.", b3)
+	}
+	b4 := newM["B"].(int)
+	if b4 != 0 {
+		t.Fatalf("Expected 0, instead got %d.", b4)
 	}
 }
