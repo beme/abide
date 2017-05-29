@@ -6,8 +6,8 @@ A testing utility for http response snapshots. Inspired by [jest](https://github
 
 1. Include abide in your project.
 
-```
-$ go get github.com/beme/abide
+```go
+import "github.com/beme/abide"
 ```
 
 2. Within your test function, capture the response to an http request, set a unique identifier, and assert.
@@ -32,9 +32,11 @@ $ go test -v
 $ go test -v -- -u
 ```
 
+Any snapshots created/updated will be located in `package/__snapshots__`.
+
 ## Snapshots
 
-A snapshot is essentially a lock file for an http response. Instead of having to manually compare every aspect of an http response to it's expected value, it can automatically generated and used for matching in subsequent testing.
+A snapshot is essentially a lock file for an http response. Instead of having to manually compare every aspect of an http response to it's expected value, it can be automatically generated and used for matching in subsequent testing.
 
 Here's an example snapshot:
 
@@ -49,7 +51,7 @@ Content-Type: application/json
 }
 ```
 
-Snapshots are located within `project/__snapshots__`.
+`abide` also supports testing outside of http responses, by providing an `Assert(*testing.T, string, Assertable)` method which will create snapshots for any type that implements `String() string`.
 
 ## Example
 
@@ -57,7 +59,7 @@ See `/example` for the usage of `abide` in a basic web server. To run tests, sim
 
 ## Config
 
-In some cases, attributes in a JSON response can by dynamic (e.g unique id's, dates, etc.), which can disrupt snapshot testing. To resolve this, an `abide.json` file config file can be included to override values with defaults. Consider the config in the supplied example project:
+In some cases, attributes in a JSON response can by dynamic (e.g unique id's, dates, etc.), which can disrupt snapshot testing. To resolve this, an `abide.json` file config can be included to override values with defaults. Consider the config in the supplied example project:
 
 ```json
 {
