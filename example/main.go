@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"time"
+
+	"github.com/beme/abide/example/models"
 )
 
 func firstHandler(w http.ResponseWriter, r *http.Request) {
@@ -24,9 +26,12 @@ func firstHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func secondHandler(w http.ResponseWriter, r *http.Request) {
+	post := &models.Post{
+		Title: "Hello World",
+		Body:  "Foo Bar",
+	}
 	data := map[string]interface{}{
-		"key": 1,
-		"foo": "bar",
+		"post": post,
 		"stats": map[string]interface{}{
 			"updated_at": time.Now().Unix(),
 			"created_at": 1489345012,

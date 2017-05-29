@@ -22,8 +22,10 @@ Connection: close
 Content-Type: application/json
 
 {
-  "foo": "foobar",
-  "key": 1,
+  "post": {
+    "body": "Foo Bar",
+    "title": "Hello World"
+  },
   "stats": {
     "created_at": 1489345012,
     "things": [
