@@ -1,12 +1,12 @@
-package main
+package models
 
 import (
 	"fmt"
 )
 
 type Post struct {
-	Title string
-	Body  string
+	Title string `json:"title"`
+	Body  string `json:"body"`
 }
 
 func (p *Post) String() string {
