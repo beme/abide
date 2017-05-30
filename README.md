@@ -16,7 +16,7 @@ import "github.com/beme/abide"
 func TestFunction(t *testing.T) {
   req := httptest.NewRequest("GET", "http://example.com/", nil)
   w := httptest.NewRecorder()
-  firstHandler(w, req)
+  exampleHandler(w, req)
   res := w.Result()
   abide.AssertHTTPResponse(t, "example route", res)
 }
