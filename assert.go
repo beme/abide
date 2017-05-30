@@ -12,10 +12,12 @@ import (
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
+// Assertable represents an object that can be asserted.
 type Assertable interface {
 	String() string
 }
 
+// Assert asserts the value of an object with implements Assertable.
 func Assert(t *testing.T, id string, a Assertable) {
 	data := a.String()
 	snapshot := getSnapshot(snapshotID(id))
