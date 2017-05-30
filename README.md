@@ -1,6 +1,6 @@
 # abide
 
-A testing utility for http response snapshots. Inspired by [jest](https://github.com/facebook/jest).
+A testing utility for http response snapshots. Inspired by [Jest](https://github.com/facebook/jest).
 
 ## Usage
 
