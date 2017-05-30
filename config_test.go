@@ -19,7 +19,7 @@ func TestingConfig() {
 }
 
 func TestGetConfig(t *testing.T) {
-	defer TestingCleanup()
+	defer testingCleanup()
 
 	// test no config
 	config, err := getConfig()
