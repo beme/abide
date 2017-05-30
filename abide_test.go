@@ -6,11 +6,11 @@ import (
 	"testing"
 )
 
-func TestingCleanup() {
+func testingCleanup() {
 	os.RemoveAll(snapshotsDir)
 }
 
-func TestingSnapshot(id, value string) *snapshot {
+func testingSnapshot(id, value string) *snapshot {
 	snapshot, err := createSnapshot(snapshotID(id), value)
 	if err != nil {
 		panic(err)
@@ -27,10 +27,10 @@ func TestSnapshotIDIsValid(t *testing.T) {
 }
 
 func TestSnapshotsSave(t *testing.T) {
-	defer TestingCleanup()
+	defer testingCleanup()
 
-	sA := TestingSnapshot("1", "A")
-	sB := TestingSnapshot("2", "B")
+	sA := testingSnapshot("1", "A")
+	sB := testingSnapshot("2", "B")
 
 	s := &snapshots{
 		"1": sA,
@@ -44,10 +44,10 @@ func TestSnapshotsSave(t *testing.T) {
 }
 
 func TestLoadSnapshots(t *testing.T) {
-	defer TestingCleanup()
+	defer testingCleanup()
 
-	sA := TestingSnapshot("1", "A")
-	sB := TestingSnapshot("2", "B")
+	sA := testingSnapshot("1", "A")
+	sB := testingSnapshot("2", "B")
 
 	s := snapshots{
 		"1": sA,
@@ -70,9 +70,9 @@ func TestLoadSnapshots(t *testing.T) {
 }
 
 func TestGetSnapshot(t *testing.T) {
-	defer TestingCleanup()
+	defer testingCleanup()
 
-	snapshot := TestingSnapshot("3", "C")
+	snapshot := testingSnapshot("3", "C")
 	if !reflect.DeepEqual(snapshot, getSnapshot(snapshot.id)) {
 		t.Fatal("Failed to fetch snapshot correctly.")
 	}
