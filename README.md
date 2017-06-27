@@ -23,12 +23,12 @@ func TestFunction(t *testing.T) {
 ```
 
 3. Run your tests.
-```
+```shell
 $ go test -v
 ```
 
 4. If the output of your http response does not equal the existing snapshot, and this was intentional, the snapshot can be updated.
-```
+```shell
 $ go test -v -- -u
 ```
 
