@@ -94,19 +94,28 @@ func AssertHTTPResponse(t *testing.T, id string, w *http.Response) {
 		return
 	}
 
-	if snapshot != nil && args.shouldUpdate {
-		fmt.Printf("Updating snapshot `%s`\n", id)
-		_, err = createSnapshot(snapshotID(id), data)
-		if err != nil {
-			t.Fatal(err)
+	diff := compareResults(t, snapshot.value, strings.TrimSpace(data))
+	if diff != "" {
+		if snapshot != nil && args.shouldUpdate {
+			fmt.Printf("Updating snapshot `%s`\n", id)
+			_, err = createSnapshot(snapshotID(id), data)
+			if err != nil {
+				t.Fatal(err)
+			}
+			return
 		}
+
+		msg := "\n\nExisting snapshot does not match results...\n\n"
+		msg += diff
+		msg += "\n\n"
+		msg += "If this change was intentional, run tests again, $ go test -v -- -u\n"
+
+		t.Error(msg)
 		return
 	}
-
-	compareResults(t, snapshot.value, strings.TrimSpace(data))
 }
 
-func compareResults(t *testing.T, existing, new string) {
+func compareResults(t *testing.T, existing, new string) string {
 	dmp := diffmatchpatch.New()
 	dmp.PatchMargin = 20
 	allDiffs := dmp.DiffMain(existing, new, false)
@@ -116,12 +125,10 @@ func compareResults(t *testing.T, existing, new string) {
 			nonEqualDiffs = append(nonEqualDiffs, diff)
 		}
 	}
-	if len(nonEqualDiffs) > 0 {
-		msg := "\n\nExisting snapshot does not match results...\n\n"
-		msg += dmp.DiffPrettyText(allDiffs)
-		msg += "\n\n"
-		msg += "If this change was intentional, run tests again, $ go test -v -- -u\n"
 
-		t.Error(msg)
+	if len(nonEqualDiffs) == 0 {
+		return ""
 	}
+
+	return dmp.DiffPrettyText(allDiffs)
 }
