@@ -22,18 +22,21 @@ func Assert(t *testing.T, id string, a Assertable) {
 	data := a.String()
 	snapshot := getSnapshot(snapshotID(id))
 
+	var err error
 	if snapshot == nil {
 		fmt.Printf("Creating snapshot `%s`\n", id)
-		_, err := createSnapshot(snapshotID(id), data)
+		snapshot, err = createSnapshot(snapshotID(id), data)
 		if err != nil {
 			t.Fatal(err)
 		}
+		snapshot.evaluated = true
 		return
 	}
 
+	snapshot.evaluated = true
 	if snapshot != nil && args.shouldUpdate {
 		fmt.Printf("Updating snapshot `%s`\n", id)
-		_, err := createSnapshot(snapshotID(id), data)
+		_, err = createSnapshot(snapshotID(id), data)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -87,13 +90,15 @@ func AssertHTTPResponse(t *testing.T, id string, w *http.Response) {
 
 	if snapshot == nil {
 		fmt.Printf("Creating snapshot `%s`\n", id)
-		_, err = createSnapshot(snapshotID(id), data)
+		snapshot, err = createSnapshot(snapshotID(id), data)
 		if err != nil {
 			t.Fatal(err)
 		}
+		snapshot.evaluated = true
 		return
 	}
 
+	snapshot.evaluated = true
 	diff := compareResults(t, snapshot.value, strings.TrimSpace(data))
 	if diff != "" {
 		if snapshot != nil && args.shouldUpdate {

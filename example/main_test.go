@@ -2,10 +2,17 @@ package main
 
 import (
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/beme/abide"
 )
+
+func TestMain(m *testing.M) {
+	exit := m.Run()
+	abide.Cleanup()
+	os.Exit(exit)
+}
 
 func TestFunction(t *testing.T) {
 	req := httptest.NewRequest("GET", "http://example.com/", nil)
