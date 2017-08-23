@@ -30,6 +30,19 @@ func init() {
 	allSnapshots, _ = loadSnapshots()
 }
 
+// Cleanup is an optional method which will execute cleanup operations
+// affiliated with abide testing, such as pruning snapshots.
+func Cleanup() error {
+	for _, s := range allSnapshots {
+		if !s.evaluated && args.shouldUpdate && !args.singleRun {
+			s.shouldRemove = true
+			fmt.Printf("Removing unused snapshot `%s`\n", s.id)
+		}
+	}
+
+	return allSnapshots.save()
+}
+
 // snapshotID represents the unique identifier for a snapshot.
 type snapshotID string
 
@@ -42,9 +55,11 @@ func (s *snapshotID) isValid() bool {
 
 // snapshot represents the expected value of a test, identified by an id.
 type snapshot struct {
-	id    snapshotID
-	value string
-	path  string
+	id           snapshotID
+	value        string
+	path         string
+	evaluated    bool
+	shouldRemove bool
 }
 
 // snapshots represents a map of snapshots by id.
@@ -68,6 +83,9 @@ func (s snapshots) save() error {
 
 		snapshotMap := snapshots{}
 		for _, snap := range snaps {
+			if snap.shouldRemove {
+				continue
+			}
 			snapshotMap[snap.id] = snap
 		}
 		data, err := encode(snapshotMap)

@@ -12,10 +12,6 @@ Content-Type: application/json
   }
 }
 
-/* snapshot: person */
-Foo
-Bar
-
 /* snapshot: second route */
 HTTP/1.1 200 OK
 Connection: close

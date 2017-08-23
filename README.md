@@ -34,6 +34,20 @@ $ go test -v -- -u
 
 Any snapshots created/updated will be located in `package/__snapshots__`.
 
+5. Cleanup
+
+To ensure only the snapshots in-use are included, add the following to `TestMain`. If your application does not have one yet, you can read about `TestMain` usage here. [here](https://golang.org/pkg/testing/#hdr-Main).
+
+```go
+func TestMain(m *testing.M) {
+	exit := m.Run()
+	abide.Cleanup()
+	os.Exit(exit)
+}
+```
+
+Once included, if the update `-u` flag is used when running tests, any snapshot that is no longer in use will be removed. If a single test is run, pruning will not occur.
+
 ## Snapshots
 
 A snapshot is essentially a lock file for an http response. Instead of having to manually compare every aspect of an http response to it's expected value, it can be automatically generated and used for matching in subsequent testing.
