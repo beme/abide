@@ -34,16 +34,22 @@ func Assert(t *testing.T, id string, a Assertable) {
 	}
 
 	snapshot.evaluated = true
-	if snapshot != nil && args.shouldUpdate {
-		fmt.Printf("Updating snapshot `%s`\n", id)
-		_, err = createSnapshot(snapshotID(id), data)
-		if err != nil {
-			t.Fatal(err)
+	diff := compareResults(t, snapshot.value, strings.TrimSpace(data))
+	if diff != "" {
+		if snapshot != nil && args.shouldUpdate {
+			fmt.Printf("Updating snapshot `%s`\n", id)
+			_, err = createSnapshot(snapshotID(id), data)
+			if err != nil {
+				t.Fatal(err)
+			}
+			return
 		}
+
+		msg := didNotMatchMessage(diff)
+
+		t.Error(msg)
 		return
 	}
-
-	compareResults(t, snapshot.value, data)
 }
 
 // AssertHTTPResponse asserts the value of an http.Response.
@@ -110,10 +116,7 @@ func AssertHTTPResponse(t *testing.T, id string, w *http.Response) {
 			return
 		}
 
-		msg := "\n\nExisting snapshot does not match results...\n\n"
-		msg += diff
-		msg += "\n\n"
-		msg += "If this change was intentional, run tests again, $ go test -v -- -u\n"
+		msg := didNotMatchMessage(diff)
 
 		t.Error(msg)
 		return
@@ -136,4 +139,12 @@ func compareResults(t *testing.T, existing, new string) string {
 	}
 
 	return dmp.DiffPrettyText(allDiffs)
+}
+
+func didNotMatchMessage(diff string) string {
+	msg := "\n\nExisting snapshot does not match results...\n\n"
+	msg += diff
+	msg += "\n\n"
+	msg += "If this change was intentional, run tests again, $ go test -v -- -u\n"
+	return msg
 }
