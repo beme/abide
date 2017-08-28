@@ -40,9 +40,9 @@ To ensure only the snapshots in-use are included, add the following to `TestMain
 
 ```go
 func TestMain(m *testing.M) {
-	exit := m.Run()
-	abide.Cleanup()
-	os.Exit(exit)
+  exit := m.Run()
+  abide.Cleanup()
+  os.Exit(exit)
 }
 ```
 
