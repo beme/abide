@@ -46,7 +46,7 @@ func TestMain(m *testing.M) {
 }
 ```
 
-Once included, if the update `-u` flag is used when running tests, any snapshot that is no longer in use will be removed. If a single test is run, pruning will not occur.
+Once included, if the update `-u` flag is used when running tests, any snapshot that is no longer in use will be removed. Note: if a single test is run, pruning _will not occur_.
 
 ## Snapshots
 
