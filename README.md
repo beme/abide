@@ -2,6 +2,9 @@
 
 A testing utility for http response snapshots. Inspired by [Jest](https://github.com/facebook/jest).
 
+[![Build Status](https://travis-ci.org/beme/abide.png)](https://travis-ci.org/beme/abide)
+[![GoDoc](https://godoc.org/github.com/beme/abide?status.svg)](https://godoc.org/github.com/beme/abide)
+
 ## Usage
 
 1. Include abide in your project.
