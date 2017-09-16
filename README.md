@@ -27,7 +27,7 @@ func TestFunction(t *testing.T) {
 $ go test -v
 ```
 
-4. If the output of your http response does not equal the existing snapshot, and this was intentional, the snapshot can be updated.
+4. If the output of your http response does not equal the existing snapshot, the difference will be printed in the test output. If this change was intentional, the snapshot can be updated by including the `-u` flag.
 ```shell
 $ go test -v -- -u
 ```
@@ -36,7 +36,7 @@ Any snapshots created/updated will be located in `package/__snapshots__`.
 
 5. Cleanup
 
-To ensure only the snapshots in-use are included, add the following to `TestMain`. If your application does not have one yet, you can read about `TestMain` usage here. [here](https://golang.org/pkg/testing/#hdr-Main).
+To ensure only the snapshots in-use are included, add the following to `TestMain`. If your application does not have one yet, you can read about `TestMain` usage [here](https://golang.org/pkg/testing/#hdr-Main).
 
 ```go
 func TestMain(m *testing.M) {
