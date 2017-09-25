@@ -23,7 +23,6 @@ Content-Type: application/json
     "title": "Hello World"
   },
   "stats": {
-    "created_at": 1489345012,
     "things": [
       {
         "updated_at": 0
