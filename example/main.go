@@ -34,7 +34,7 @@ func secondHandler(w http.ResponseWriter, r *http.Request) {
 		"post": post,
 		"stats": map[string]interface{}{
 			"updated_at": time.Now().Unix(),
-			"created_at": 1489345012,
+			"created_at": int64(1489345012),
 			"things": []map[string]interface{}{
 				{
 					"updated_at": time.Now().Unix(),
