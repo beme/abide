@@ -19,6 +19,46 @@ func testingSnapshot(id, value string) *snapshot {
 	return snapshot
 }
 
+func TestCleanup(t *testing.T) {
+	defer testingCleanup()
+
+	_ = testingSnapshot("1", "A")
+
+	// If shouldUpdate = false, the snapshot must remain.
+	err := Cleanup()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	allSnapshots, err = loadSnapshots()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	snapshot := getSnapshot("1")
+	if snapshot == nil {
+		t.Fatal("Expected snapshot[1] to exist.")
+	}
+
+	// If shouldUpdate = true and singleRun = false, the snapshot must be removed.
+	args.shouldUpdate = true
+	args.singleRun = false
+	err = Cleanup()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	allSnapshots, err = loadSnapshots()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	snapshot = getSnapshot("1")
+	if snapshot != nil {
+		t.Fatal("Expected snapshot[1] to be removed.")
+	}
+}
+
 func TestSnapshotIDIsValid(t *testing.T) {
 	id := snapshotID("1")
 	if !id.isValid() {
