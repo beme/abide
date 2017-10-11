@@ -3,6 +3,8 @@ package abide
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
 	"strings"
@@ -64,6 +66,15 @@ func AssertHTTPResponse(t *testing.T, id string, w *http.Response) {
 	}
 
 	createOrUpdateSnapshot(t, id, data)
+}
+
+func AssertReader(t *testing.T, id string, r io.Reader) {
+	data, err := ioutil.ReadAll(r)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	createOrUpdateSnapshot(t, id, string(data))
 }
 
 func createOrUpdateSnapshot(t *testing.T, id, data string) {
