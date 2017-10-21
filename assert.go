@@ -68,6 +68,7 @@ func AssertHTTPResponse(t *testing.T, id string, w *http.Response) {
 	createOrUpdateSnapshot(t, id, data)
 }
 
+// AssertReader asserts the value of an io.Reader.
 func AssertReader(t *testing.T, id string, r io.Reader) {
 	data, err := ioutil.ReadAll(r)
 	if err != nil {
