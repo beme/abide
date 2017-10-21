@@ -82,6 +82,11 @@ func createOrUpdateSnapshot(t *testing.T, id, data string) {
 
 	var err error
 	if snapshot == nil {
+		if !args.shouldUpdate {
+			t.Error(newSnapshotMessage(data))
+			return
+		}
+
 		fmt.Printf("Creating snapshot `%s`\n", id)
 		snapshot, err = createSnapshot(snapshotID(id), data)
 		if err != nil {
@@ -103,9 +108,7 @@ func createOrUpdateSnapshot(t *testing.T, id, data string) {
 			return
 		}
 
-		msg := didNotMatchMessage(diff)
-
-		t.Error(msg)
+		t.Error(didNotMatchMessage(diff))
 		return
 	}
 }
@@ -133,5 +136,13 @@ func didNotMatchMessage(diff string) string {
 	msg += diff
 	msg += "\n\n"
 	msg += "If this change was intentional, run tests again, $ go test -v -- -u\n"
+	return msg
+}
+
+func newSnapshotMessage(body string) string {
+	msg := "\n\nNew snapshot found...\n\n"
+	msg += body
+	msg += "\n\n"
+	msg += "To save, run tests again, $ go test -v -- -u\n"
 	return msg
 }
