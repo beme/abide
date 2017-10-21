@@ -3,6 +3,8 @@ package abide
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
 	"strings"
@@ -20,36 +22,7 @@ type Assertable interface {
 // Assert asserts the value of an object with implements Assertable.
 func Assert(t *testing.T, id string, a Assertable) {
 	data := a.String()
-	snapshot := getSnapshot(snapshotID(id))
-
-	var err error
-	if snapshot == nil {
-		fmt.Printf("Creating snapshot `%s`\n", id)
-		snapshot, err = createSnapshot(snapshotID(id), data)
-		if err != nil {
-			t.Fatal(err)
-		}
-		snapshot.evaluated = true
-		return
-	}
-
-	snapshot.evaluated = true
-	diff := compareResults(t, snapshot.value, strings.TrimSpace(data))
-	if diff != "" {
-		if snapshot != nil && args.shouldUpdate {
-			fmt.Printf("Updating snapshot `%s`\n", id)
-			_, err = createSnapshot(snapshotID(id), data)
-			if err != nil {
-				t.Fatal(err)
-			}
-			return
-		}
-
-		msg := didNotMatchMessage(diff)
-
-		t.Error(msg)
-		return
-	}
+	createOrUpdateSnapshot(t, id, data)
 }
 
 // AssertHTTPResponse asserts the value of an http.Response.
@@ -58,8 +31,6 @@ func AssertHTTPResponse(t *testing.T, id string, w *http.Response) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	snapshot := getSnapshot(snapshotID(id))
 
 	body, err := httputil.DumpResponse(w, true)
 	if err != nil {
@@ -94,6 +65,22 @@ func AssertHTTPResponse(t *testing.T, id string, w *http.Response) {
 		data = strings.Join(lines, "\n")
 	}
 
+	createOrUpdateSnapshot(t, id, data)
+}
+
+func AssertReader(t *testing.T, id string, r io.Reader) {
+	data, err := ioutil.ReadAll(r)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	createOrUpdateSnapshot(t, id, string(data))
+}
+
+func createOrUpdateSnapshot(t *testing.T, id, data string) {
+	snapshot := getSnapshot(snapshotID(id))
+
+	var err error
 	if snapshot == nil {
 		fmt.Printf("Creating snapshot `%s`\n", id)
 		snapshot, err = createSnapshot(snapshotID(id), data)

@@ -14,7 +14,7 @@ func TestMain(m *testing.M) {
 	os.Exit(exit)
 }
 
-func TestFunction(t *testing.T) {
+func TestRequests(t *testing.T) {
 	req := httptest.NewRequest("GET", "http://example.com/", nil)
 	w := httptest.NewRecorder()
 	firstHandler(w, req)
@@ -32,4 +32,12 @@ func TestFunction(t *testing.T) {
 	thirdHandler(w, req)
 	res = w.Result()
 	abide.AssertHTTPResponse(t, "third route", res)
+}
+
+func TestReader(t *testing.T) {
+	req := httptest.NewRequest("GET", "http://example.com/", nil)
+	w := httptest.NewRecorder()
+	fourthHandler(w, req)
+	res := w.Result()
+	abide.AssertReader(t, "reader", res.Body)
 }
