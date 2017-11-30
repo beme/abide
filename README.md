@@ -87,4 +87,4 @@ In some cases, attributes in a JSON response can by dynamic (e.g unique id's, da
 }
 ```
 
-For any JSON response, the key-value pairs in `defaults` will be used to override, allowing for consistent snapshot testing.
+When used with `AssertHTTPResponse`, for any response with `Content-Type: application/json`, the key-value pairs in `defaults` will be used to override the JSON response, allowing for consistent snapshot testing.
