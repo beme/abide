@@ -84,7 +84,7 @@ func createOrUpdateSnapshot(t *testing.T, id, data string) {
 	var err error
 	if snapshot == nil {
 		if !args.shouldUpdate {
-			t.Error(newSnapshotMessage(data))
+			t.Error(newSnapshotMessage(id, data))
 			return
 		}
 
@@ -109,7 +109,7 @@ func createOrUpdateSnapshot(t *testing.T, id, data string) {
 			return
 		}
 
-		t.Error(didNotMatchMessage(diff))
+		t.Error(didNotMatchMessage(id, diff))
 		return
 	}
 }
@@ -132,16 +132,18 @@ func compareResults(t *testing.T, existing, new string) string {
 	return dmp.DiffPrettyText(allDiffs)
 }
 
-func didNotMatchMessage(diff string) string {
-	msg := "\n\nExisting snapshot does not match results...\n\n"
+func didNotMatchMessage(id string, diff string) string {
+	msg := "\n\n## Existing snapshot does not match results...\n"
+	msg += "## \"" + id + "\"\n\n"
 	msg += diff
 	msg += "\n\n"
 	msg += "If this change was intentional, run tests again, $ go test -v -- -u\n"
 	return msg
 }
 
-func newSnapshotMessage(body string) string {
-	msg := "\n\nNew snapshot found...\n\n"
+func newSnapshotMessage(id string, body string) string {
+	msg := "\n\n## New snapshot found...\n"
+	msg += "## \"" + id + "\"\n\n"
 	msg += body
 	msg += "\n\n"
 	msg += "To save, run tests again, $ go test -v -- -u\n"
