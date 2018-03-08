@@ -39,8 +39,10 @@ func AssertHTTPResponse(t *testing.T, id string, w *http.Response) {
 
 	data := string(body)
 
+	contentType := w.Header.Get("Content-Type")
+
 	// If the response body is JSON, indent.
-	if w.Header.Get("Content-Type") == "application/json" {
+	if contentTypeIsJSON(contentType) {
 		lines := strings.Split(data, "\n")
 		jsonStr := lines[len(lines)-1]
 
@@ -66,6 +68,26 @@ func AssertHTTPResponse(t *testing.T, id string, w *http.Response) {
 	}
 
 	createOrUpdateSnapshot(t, id, data)
+}
+
+func contentTypeIsJSON(contentType string) bool {
+	contentTypeParts := strings.Split(contentType, ";")
+	firstPart := contentTypeParts[0]
+
+	isPlainJSON := firstPart == "application/json"
+	if isPlainJSON {
+		return isPlainJSON
+	}
+
+	isVendor := strings.HasPrefix(firstPart, "application/vnd.")
+
+	isJSON := strings.HasSuffix(firstPart, "+json")
+
+	if isVendor && isJSON {
+		return true
+	}
+
+	return false
 }
 
 // AssertReader asserts the value of an io.Reader.
