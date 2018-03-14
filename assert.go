@@ -39,8 +39,10 @@ func AssertHTTPResponse(t *testing.T, id string, w *http.Response) {
 
 	data := string(body)
 
+	contentType := w.Header.Get("Content-Type")
+
 	// If the response body is JSON, indent.
-	if w.Header.Get("Content-Type") == "application/json" {
+	if contentTypeIsJSON(contentType) {
 		lines := strings.Split(data, "\n")
 		jsonStr := lines[len(lines)-1]
 
@@ -68,6 +70,22 @@ func AssertHTTPResponse(t *testing.T, id string, w *http.Response) {
 	createOrUpdateSnapshot(t, id, data)
 }
 
+func contentTypeIsJSON(contentType string) bool {
+	contentTypeParts := strings.Split(contentType, ";")
+	firstPart := contentTypeParts[0]
+
+	isPlainJSON := firstPart == "application/json"
+	if isPlainJSON {
+		return isPlainJSON
+	}
+
+	isVendor := strings.HasPrefix(firstPart, "application/vnd.")
+
+	isJSON := strings.HasSuffix(firstPart, "+json")
+
+	return isVendor && isJSON
+}
+
 // AssertReader asserts the value of an io.Reader.
 func AssertReader(t *testing.T, id string, r io.Reader) {
 	data, err := ioutil.ReadAll(r)
@@ -84,7 +102,7 @@ func createOrUpdateSnapshot(t *testing.T, id, data string) {
 	var err error
 	if snapshot == nil {
 		if !args.shouldUpdate {
-			t.Error(newSnapshotMessage(data))
+			t.Error(newSnapshotMessage(id, data))
 			return
 		}
 
@@ -109,7 +127,7 @@ func createOrUpdateSnapshot(t *testing.T, id, data string) {
 			return
 		}
 
-		t.Error(didNotMatchMessage(diff))
+		t.Error(didNotMatchMessage(id, diff))
 		return
 	}
 }
@@ -132,16 +150,18 @@ func compareResults(t *testing.T, existing, new string) string {
 	return dmp.DiffPrettyText(allDiffs)
 }
 
-func didNotMatchMessage(diff string) string {
-	msg := "\n\nExisting snapshot does not match results...\n\n"
+func didNotMatchMessage(id, diff string) string {
+	msg := "\n\n## Existing snapshot does not match results...\n"
+	msg += "## \"" + id + "\"\n\n"
 	msg += diff
 	msg += "\n\n"
 	msg += "If this change was intentional, run tests again, $ go test -v -- -u\n"
 	return msg
 }
 
-func newSnapshotMessage(body string) string {
-	msg := "\n\nNew snapshot found...\n\n"
+func newSnapshotMessage(id, body string) string {
+	msg := "\n\n## New snapshot found...\n"
+	msg += "## \"" + id + "\"\n\n"
 	msg += body
 	msg += "\n\n"
 	msg += "To save, run tests again, $ go test -v -- -u\n"
