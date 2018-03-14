@@ -1,31 +1,29 @@
 package abide
 
-import "testing"
-
-var contentTypeTestCases = []struct {
-	input  string
-	output bool
-}{
-	{"application/json", true},
-	{"application/json; charset=utf-8", true},
-	{"application/vnd.foo.bar.v2+json", true},
-	{"application/application/json", false},
-	{"application/json/json", false},
-	{"application/jsoner; charset=utf-8", false},
-	{"application/jsoner", false},
-	{"application/vnd.foo.bar.v2+jsoner", false},
-	{"application/xml", false},
-	{"text/html", false},
-	{"", false},
-}
+import (
+	"testing"
+)
 
 func TestContentTypeIsJSON(test *testing.T) {
-	for _, testCase := range contentTypeTestCases {
+	contentTypeTestCases := map[string]bool{
+		"application/json":                  true,
+		"application/json; charset=utf-8":   true,
+		"application/vnd.foo.bar.v2+json":   true,
+		"application/application/json":      false,
+		"application/json/json":             false,
+		"application/jsoner; charset=utf-8": false,
+		"application/jsoner":                false,
+		"application/vnd.foo.bar.v2+jsoner": false,
+		"application/xml":                   false,
+		"text/html":                         false,
+		"":                                  false,
+	}
 
-		result := contentTypeIsJSON(testCase.input)
+	for input, expectedOutput := range contentTypeTestCases {
+		result := contentTypeIsJSON(input)
 
-		if result != testCase.output {
-			test.Errorf("contentTypeIsJSON(\"%s\" unexpected result. Got=%t, Want=%t", testCase.input, result, testCase.output)
+		if result != expectedOutput {
+			test.Errorf("contentTypeIsJSON(\"%s\" unexpected result. Got=%t, Want=%t", input, result, expectedOutput)
 		}
 	}
 }

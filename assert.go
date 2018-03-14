@@ -83,11 +83,7 @@ func contentTypeIsJSON(contentType string) bool {
 
 	isJSON := strings.HasSuffix(firstPart, "+json")
 
-	if isVendor && isJSON {
-		return true
-	}
-
-	return false
+	return isVendor && isJSON
 }
 
 // AssertReader asserts the value of an io.Reader.
@@ -154,7 +150,7 @@ func compareResults(t *testing.T, existing, new string) string {
 	return dmp.DiffPrettyText(allDiffs)
 }
 
-func didNotMatchMessage(id string, diff string) string {
+func didNotMatchMessage(id, diff string) string {
 	msg := "\n\n## Existing snapshot does not match results...\n"
 	msg += "## \"" + id + "\"\n\n"
 	msg += diff
@@ -163,7 +159,7 @@ func didNotMatchMessage(id string, diff string) string {
 	return msg
 }
 
-func newSnapshotMessage(id string, body string) string {
+func newSnapshotMessage(id, body string) string {
 	msg := "\n\n## New snapshot found...\n"
 	msg += "## \"" + id + "\"\n\n"
 	msg += body
