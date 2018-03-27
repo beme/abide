@@ -43,7 +43,7 @@ func AssertHTTPResponse(t *testing.T, id string, w *http.Response) {
 
 	// If the response body is JSON, indent.
 	if contentTypeIsJSON(contentType) {
-		lines := strings.Split(data, "\n")
+		lines := strings.Split(strings.TrimSpace(data), "\n")
 		jsonStr := lines[len(lines)-1]
 
 		var jsonIface map[string]interface{}
