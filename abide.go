@@ -136,20 +136,20 @@ func encode(snaps snapshots) ([]byte, error) {
 
 	sort.Strings(ids)
 
-	data := ""
 	for _, id := range ids {
 		s := snaps[snapshotID(id)]
 
-		data += fmt.Sprintf("%s%s", snapshotSeparator, string(s.id)) + " */\n"
-		data += s.value + "\n\n"
+		_, err = buf.WriteString(fmt.Sprintf("%s%s */\n", snapshotSeparator, string(s.id)))
+		if err != nil {
+			return nil, err
+		}
+		_, err = buf.WriteString(fmt.Sprintf("%s\n\n", s.value))
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	_, err = buf.WriteString(strings.TrimSpace(data))
-	if err != nil {
-		return nil, err
-	}
-
-	return buf.Bytes(), nil
+	return bytes.TrimSpace(buf.Bytes()), nil
 }
 
 // loadSnapshots loads all snapshots in the current directory.
