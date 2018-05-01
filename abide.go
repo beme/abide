@@ -17,8 +17,12 @@ var (
 )
 
 const (
-	snapshotsDir      = "__snapshots__"
-	snapshotExt       = ".snapshot"
+	// SnapshotsDir is the directory snapshots will be read to & written from
+	// relative directories are resolved to present-working-directory of the executing process
+	SnapshotsDir = "__snapshots__"
+	// SnapshotExt is the file extension to use for a collection of snapshot records
+	SnapshotExt = ".snapshot"
+	// snapshotSeparator deliniates records in the snapshots, not externally settable
 	snapshotSeparator = "/* snapshot: "
 )
 
@@ -27,7 +31,7 @@ func init() {
 	args = getArguments()
 
 	// 2. Load snapshots.
-	allSnapshots, _ = loadSnapshots()
+	LoadSnapshots()
 }
 
 // Cleanup is an optional method which will execute cleanup operations
@@ -152,27 +156,30 @@ func encode(snaps snapshots) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-// loadSnapshots loads all snapshots in the current directory.
-func loadSnapshots() (snapshots, error) {
+// LoadSnapshots loads all snapshots in the current directory
+// each call to LoadSnapshots overwrites allSnapshots internal
+// variable
+func LoadSnapshots() error {
 	dir, err := findOrCreateSnapshotDirectory()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	paths := []string{}
 	for _, file := range files {
 		path := filepath.Join(dir, file.Name())
-		if filepath.Ext(path) == snapshotExt {
+		if filepath.Ext(path) == SnapshotExt {
 			paths = append(paths, path)
 		}
 	}
 
-	return parseSnapshotsFromPaths(paths)
+	allSnapshots, err = parseSnapshotsFromPaths(paths)
+	return err
 }
 
 // getSnapshot retrieves a snapshot by id.
@@ -196,7 +203,7 @@ func createSnapshot(id snapshotID, value string) (*snapshot, error) {
 		return nil, err
 	}
 
-	path := filepath.Join(dir, fmt.Sprintf("%s%s", pkg, snapshotExt))
+	path := filepath.Join(dir, fmt.Sprintf("%s%s", pkg, SnapshotExt))
 
 	s := &snapshot{
 		id:    id,
@@ -219,7 +226,7 @@ func findOrCreateSnapshotDirectory() (string, error) {
 		return "", errUnableToLocateTestPath
 	}
 
-	dir := filepath.Join(testingPath, snapshotsDir)
+	dir := filepath.Join(testingPath, SnapshotsDir)
 	_, err = os.Stat(dir)
 	if os.IsNotExist(err) {
 		err = os.Mkdir(dir, os.ModePerm)

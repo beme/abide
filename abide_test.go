@@ -7,7 +7,7 @@ import (
 )
 
 func testingCleanup() {
-	os.RemoveAll(snapshotsDir)
+	os.RemoveAll(SnapshotsDir)
 }
 
 func testingSnapshot(id, value string) *snapshot {
@@ -30,7 +30,7 @@ func TestCleanup(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	allSnapshots, err = loadSnapshots()
+	err = LoadSnapshots()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -48,7 +48,7 @@ func TestCleanup(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	allSnapshots, err = loadSnapshots()
+	err = LoadSnapshots()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -99,12 +99,12 @@ func TestLoadSnapshots(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	sNew, err := loadSnapshots()
+	err = LoadSnapshots()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if !reflect.DeepEqual(s, sNew) {
+	if !reflect.DeepEqual(s, allSnapshots) {
 		t.Fatalf("Failed to load snapshots correctly.")
 	}
 }

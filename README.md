@@ -88,3 +88,17 @@ In some cases, attributes in a JSON response can by dynamic (e.g unique id's, da
 ```
 
 When used with `AssertHTTPResponse`, for any response with `Content-Type: application/json`, the key-value pairs in `defaults` will be used to override the JSON response, allowing for consistent snapshot testing.
+
+
+## Using custom `__snapshot__` directory & file extensions
+
+To write snapshots to a directory other than the default `__snapshot__`, adjust `abide.SnapshotDir` and/or `abide.SnapshotExt` then call `abide.LoadSnapshots()` to re-load snapshots:
+
+```golang
+func init() {
+  abide.SnapshotDir = "testdata/__snapshots__"
+  if err := abide.LoadSnapshots(); err != nil {
+    panic(err)
+  }
+}
+``` 
