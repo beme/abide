@@ -19,6 +19,15 @@ func testingSnapshot(id, value string) *snapshot {
 	return snapshot
 }
 
+func testingSnapshots(count int) snapshots {
+	s := make(snapshots, count)
+	for i := 0; i < count; i++ {
+		id := string(i)
+		s[snapshotID(id)] = testingSnapshot(id, id)
+	}
+	return s
+}
+
 func TestCleanup(t *testing.T) {
 	defer testingCleanup()
 
@@ -117,3 +126,15 @@ func TestGetSnapshot(t *testing.T) {
 		t.Fatal("Failed to fetch snapshot correctly.")
 	}
 }
+
+func benchmarkEncode(count int, b *testing.B) {
+	defer testingCleanup()
+	s := testingSnapshots(count)
+	for i := 0; i < b.N; i++ {
+		encode(s)
+	}
+}
+
+func BenchmarkEncode10(b *testing.B)   { benchmarkEncode(10, b) }
+func BenchmarkEncode100(b *testing.B)  { benchmarkEncode(100, b) }
+func BenchmarkEncode1000(b *testing.B) { benchmarkEncode(1000, b) }
