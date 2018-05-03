@@ -4,12 +4,7 @@ Connection: close
 Content-Type: application/json
 
 {
-  "A": {
-    "B": [
-      "foo",
-      "bar"
-    ]
-  }
+  "foo": "foobar"
 }
 
 /* snapshot: reader */

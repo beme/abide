@@ -9,10 +9,8 @@ import (
 )
 
 func firstHandler(w http.ResponseWriter, r *http.Request) {
-	data := map[string]interface{}{
-		"A": map[string][]string{
-			"B": []string{"foo", "bar"},
-		},
+	data := map[string]string{
+		"foo": "bar",
 	}
 
 	body, err := json.Marshal(data)
