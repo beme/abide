@@ -16,22 +16,24 @@ var (
 	allSnapshots snapshots
 )
 
-const (
+var (
 	// SnapshotsDir is the directory snapshots will be read to & written from
 	// relative directories are resolved to present-working-directory of the executing process
 	SnapshotsDir = "__snapshots__"
-	// SnapshotExt is the file extension to use for a collection of snapshot records
-	SnapshotExt = ".snapshot"
+	// snapshotsLoaded
+	snapshotsLoaded = sync.Once{}
+)
+
+const (
+	// snapshotExt is the file extension to use for a collection of snapshot records
+	snapshotExt = ".snapshot"
 	// snapshotSeparator deliniates records in the snapshots, not externally settable
 	snapshotSeparator = "/* snapshot: "
 )
 
 func init() {
-	// 1. Get arguments.
+	// Get arguments
 	args = getArguments()
-
-	// 2. Load snapshots.
-	LoadSnapshots()
 }
 
 // Cleanup is an optional method which will execute cleanup operations
@@ -156,10 +158,18 @@ func encode(snaps snapshots) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-// LoadSnapshots loads all snapshots in the current directory
-// each call to LoadSnapshots overwrites allSnapshots internal
-// variable
-func LoadSnapshots() error {
+// loadSnapshots loads all snapshots in the current directory, can only
+// be called once
+func loadSnapshots() (err error) {
+	snapshotsLoaded.Do(func() {
+		err = reloadSnapshots()
+	})
+	return err
+}
+
+// reloadSnapshots overwrites allSnapshots internal
+// variable with the designated snapshots file
+func reloadSnapshots() error {
 	dir, err := findOrCreateSnapshotDirectory()
 	if err != nil {
 		return err
@@ -173,7 +183,7 @@ func LoadSnapshots() error {
 	paths := []string{}
 	for _, file := range files {
 		path := filepath.Join(dir, file.Name())
-		if filepath.Ext(path) == SnapshotExt {
+		if filepath.Ext(path) == snapshotExt {
 			paths = append(paths, path)
 		}
 	}
@@ -184,6 +194,9 @@ func LoadSnapshots() error {
 
 // getSnapshot retrieves a snapshot by id.
 func getSnapshot(id snapshotID) *snapshot {
+	if err := loadSnapshots(); err != nil {
+		panic(err)
+	}
 	return allSnapshots[id]
 }
 
@@ -191,6 +204,10 @@ func getSnapshot(id snapshotID) *snapshot {
 func createSnapshot(id snapshotID, value string) (*snapshot, error) {
 	if !id.isValid() {
 		return nil, errInvalidSnapshotID
+	}
+
+	if err := loadSnapshots(); err != nil {
+		return nil, err
 	}
 
 	dir, err := findOrCreateSnapshotDirectory()
@@ -203,7 +220,7 @@ func createSnapshot(id snapshotID, value string) (*snapshot, error) {
 		return nil, err
 	}
 
-	path := filepath.Join(dir, fmt.Sprintf("%s%s", pkg, SnapshotExt))
+	path := filepath.Join(dir, fmt.Sprintf("%s%s", pkg, snapshotExt))
 
 	s := &snapshot{
 		id:    id,

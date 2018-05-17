@@ -30,7 +30,7 @@ func TestCleanup(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = LoadSnapshots()
+	err = loadSnapshots()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -48,7 +48,8 @@ func TestCleanup(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = LoadSnapshots()
+	// call private reloadSnapshots to repeat once-executing function
+	err = reloadSnapshots()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -99,7 +100,7 @@ func TestLoadSnapshots(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = LoadSnapshots()
+	err = loadSnapshots()
 	if err != nil {
 		t.Fatal(err)
 	}
