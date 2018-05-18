@@ -97,9 +97,9 @@ func AssertReader(t *testing.T, id string, r io.Reader) {
 }
 
 func createOrUpdateSnapshot(t *testing.T, id, data string) {
+	var err error
 	snapshot := getSnapshot(snapshotID(id))
 
-	var err error
 	if snapshot == nil {
 		if !args.shouldUpdate {
 			t.Error(newSnapshotMessage(id, data))

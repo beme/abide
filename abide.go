@@ -16,18 +16,24 @@ var (
 	allSnapshots snapshots
 )
 
+var (
+	// SnapshotsDir is the directory snapshots will be read to & written from
+	// relative directories are resolved to present-working-directory of the executing process
+	SnapshotsDir = "__snapshots__"
+	// snapshotsLoaded
+	snapshotsLoaded = sync.Once{}
+)
+
 const (
-	snapshotsDir      = "__snapshots__"
-	snapshotExt       = ".snapshot"
+	// snapshotExt is the file extension to use for a collection of snapshot records
+	snapshotExt = ".snapshot"
+	// snapshotSeparator deliniates records in the snapshots, not externally settable
 	snapshotSeparator = "/* snapshot: "
 )
 
 func init() {
-	// 1. Get arguments.
+	// Get arguments
 	args = getArguments()
-
-	// 2. Load snapshots.
-	allSnapshots, _ = loadSnapshots()
 }
 
 // Cleanup is an optional method which will execute cleanup operations
@@ -152,16 +158,26 @@ func encode(snaps snapshots) ([]byte, error) {
 	return bytes.TrimSpace(buf.Bytes()), nil
 }
 
-// loadSnapshots loads all snapshots in the current directory.
-func loadSnapshots() (snapshots, error) {
+// loadSnapshots loads all snapshots in the current directory, can only
+// be called once
+func loadSnapshots() (err error) {
+	snapshotsLoaded.Do(func() {
+		err = reloadSnapshots()
+	})
+	return err
+}
+
+// reloadSnapshots overwrites allSnapshots internal
+// variable with the designated snapshots file
+func reloadSnapshots() error {
 	dir, err := findOrCreateSnapshotDirectory()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	paths := []string{}
@@ -172,11 +188,15 @@ func loadSnapshots() (snapshots, error) {
 		}
 	}
 
-	return parseSnapshotsFromPaths(paths)
+	allSnapshots, err = parseSnapshotsFromPaths(paths)
+	return err
 }
 
 // getSnapshot retrieves a snapshot by id.
 func getSnapshot(id snapshotID) *snapshot {
+	if err := loadSnapshots(); err != nil {
+		panic(err)
+	}
 	return allSnapshots[id]
 }
 
@@ -184,6 +204,10 @@ func getSnapshot(id snapshotID) *snapshot {
 func createSnapshot(id snapshotID, value string) (*snapshot, error) {
 	if !id.isValid() {
 		return nil, errInvalidSnapshotID
+	}
+
+	if err := loadSnapshots(); err != nil {
+		return nil, err
 	}
 
 	dir, err := findOrCreateSnapshotDirectory()
@@ -219,7 +243,7 @@ func findOrCreateSnapshotDirectory() (string, error) {
 		return "", errUnableToLocateTestPath
 	}
 
-	dir := filepath.Join(testingPath, snapshotsDir)
+	dir := filepath.Join(testingPath, SnapshotsDir)
 	_, err = os.Stat(dir)
 	if os.IsNotExist(err) {
 		err = os.Mkdir(dir, os.ModePerm)
