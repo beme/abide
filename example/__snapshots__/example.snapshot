@@ -7,6 +7,30 @@ Content-Type: application/json
   "foo": "foobar"
 }
 
+/* snapshot: http client request */
+GET / HTTP/1.1
+Host: example.com
+User-Agent: Go-http-client/1.1
+Content-Length: 31
+Content-Type: application/json
+X-Expected-Header: expected header value
+Accept-Encoding: gzip
+
+{
+  "message": "expected message"
+}
+
+/* snapshot: http server request */
+POST / HTTP/1.1
+Accept-Encoding: gzip
+Content-Length: 31
+Content-Type: application/json
+User-Agent: Go-http-client/1.1
+
+{
+  "message": "expected message"
+}
+
 /* snapshot: reader */
 Hello World.
 
