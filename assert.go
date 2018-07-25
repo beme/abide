@@ -47,7 +47,7 @@ func AssertHTTPRequestOut(t *testing.T, id string, r *http.Request) {
 	assertHTTP(t, id, body, contentTypeIsJSON(r.Header.Get("Content-Type")))
 }
 
-// AssertHTTPRequestOut asserts the value of an http.Request.
+// AssertHTTPRequest asserts the value of an http.Request.
 // Intended for use when testing incoming client requests
 // See https://golang.org/pkg/net/http/httputil/#DumpRequest for more
 func AssertHTTPRequest(t *testing.T, id string, r *http.Request) {
@@ -59,7 +59,7 @@ func AssertHTTPRequest(t *testing.T, id string, r *http.Request) {
 	assertHTTP(t, id, body, contentTypeIsJSON(r.Header.Get("Content-Type")))
 }
 
-func assertHTTP(t *testing.T, id string, body []byte, isJson bool) {
+func assertHTTP(t *testing.T, id string, body []byte, isJSON bool) {
 	config, err := getConfig()
 	if err != nil {
 		t.Fatal(err)
@@ -68,7 +68,7 @@ func assertHTTP(t *testing.T, id string, body []byte, isJson bool) {
 	data := string(body)
 
 	// If the response body is JSON, indent.
-	if isJson {
+	if isJSON {
 		lines := strings.Split(strings.TrimSpace(data), "\n")
 		jsonStr := lines[len(lines)-1]
 
