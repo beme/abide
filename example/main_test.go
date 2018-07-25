@@ -1,8 +1,10 @@
 package main
 
 import (
+	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/beme/abide"
@@ -40,4 +42,21 @@ func TestReader(t *testing.T) {
 	fourthHandler(w, req)
 	res := w.Result()
 	abide.AssertReader(t, "reader", res.Body)
+}
+
+func TestAssertHTTPRequestOut(t *testing.T) {
+	req := httptest.NewRequest(http.MethodGet, "http://example.com", strings.NewReader(`{"message": "expected message"}`))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Expected-Header", "expected header value")
+
+	abide.AssertHTTPRequestOut(t, "http client request", req)
+}
+
+func TestAssertHTTPRequest(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		r.Host = "" // httptest servers are spawned on random ports, prevent that from being in the snapshot.
+		abide.AssertHTTPRequest(t, "http server request", r)
+	}))
+
+	http.Post(server.URL, "application/json", strings.NewReader(`{"message": "expected message"}`))
 }
