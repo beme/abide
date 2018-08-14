@@ -11,7 +11,8 @@ const (
 )
 
 type config struct {
-	Defaults map[string]interface{} `json:"defaults"`
+	HeaderDefaults map[string]interface{} `json:"headerDefaults"`
+	Defaults       map[string]interface{} `json:"defaults"`
 }
 
 func getConfig() (*config, error) {

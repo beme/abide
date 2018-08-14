@@ -66,10 +66,22 @@ func assertHTTP(t *testing.T, id string, body []byte, isJSON bool) {
 	}
 
 	data := string(body)
+	lines := strings.Split(strings.TrimSpace(data), "\n")
+
+	// empty line identifies the end of the HTTP header
+	for i, line := range lines {
+		if line == "" {
+			break
+		}
+
+		headerItem := strings.Split(line, ":")
+		if def, ok := config.HeaderDefaults[headerItem[0]]; ok {
+			lines[i] = fmt.Sprintf("%s: %s", headerItem[0], def)
+		}
+	}
 
 	// If the response body is JSON, indent.
 	if isJSON {
-		lines := strings.Split(strings.TrimSpace(data), "\n")
 		jsonStr := lines[len(lines)-1]
 
 		var jsonIface map[string]interface{}
@@ -90,9 +102,9 @@ func assertHTTP(t *testing.T, id string, body []byte, isJSON bool) {
 			t.Fatal(err)
 		}
 		lines[len(lines)-1] = string(out)
-		data = strings.Join(lines, "\n")
 	}
 
+	data = strings.Join(lines, "\n")
 	createOrUpdateSnapshot(t, id, data)
 }
 

@@ -8,6 +8,9 @@ import (
 
 func TestingConfig() {
 	data := []byte(`{
+    "headerDefaults": {
+      "baz": "quz"
+    },
     "defaults": {
       "foo": "bar"
     }
@@ -34,6 +37,10 @@ func TestGetConfig(t *testing.T) {
 	config, err = getConfig()
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	if config.HeaderDefaults["baz"] != "quz" {
+		t.Fatalf("Expected to find header default value quz, instead got %s.", config.HeaderDefaults["baz"])
 	}
 
 	if config.Defaults["foo"] != "bar" {
