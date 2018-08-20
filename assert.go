@@ -75,7 +75,7 @@ func assertHTTP(t *testing.T, id string, body []byte, isJSON bool) {
 		}
 
 		headerItem := strings.Split(line, ":")
-		if def, ok := config.HeaderDefaults[headerItem[0]]; ok {
+		if def, ok := config.Defaults[headerItem[0]]; ok {
 			lines[i] = fmt.Sprintf("%s: %s", headerItem[0], def)
 		}
 	}

@@ -1,8 +1,6 @@
 {
-  "headerDefaults": {
-    "Etag": "default-etag-value"
-  },
   "defaults": {
+    "Etag": "default-etag-value",
     "updated_at": 0,
     "foo": "foobar"
   }

@@ -80,17 +80,15 @@ In some cases, attributes in a JSON response can by dynamic (e.g unique id's, da
 
 ```json
 {
-  "headerDefaults": {
-    "Etag": "default-etag-value"
-  },
   "defaults": {
+    "Etag": "default-etag-value",
     "updated_at": 0,
     "foo": "foobar"
   }
 }
 ```
 
-When used with `AssertHTTPResponse`, the key-value pairs in `headerDefaults` will be used to override the HTTP headers response, and for any response with `Content-Type: application/json`, the key-value pairs in `defaults` will be used to override the JSON response, allowing for consistent snapshot testing.
+When used with `AssertHTTPResponse`, for any response with `Content-Type: application/json`, the key-value pairs in `defaults` will be used to override the JSON response, allowing for consistent snapshot testing. Any HTTP headers will also be override for key matches in `defaults`.
 
 
 ## Using custom `__snapshot__` directory
