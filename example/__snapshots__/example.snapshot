@@ -2,6 +2,7 @@
 HTTP/1.1 200 OK
 Connection: close
 Content-Type: application/json
+Etag: default-etag-value
 
 {
   "foo": "foobar"
@@ -38,6 +39,7 @@ Hello World.
 HTTP/1.1 200 OK
 Connection: close
 Content-Type: application/json
+Etag: default-etag-value
 
 {
   "post": {
