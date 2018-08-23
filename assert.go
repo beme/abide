@@ -68,15 +68,17 @@ func assertHTTP(t *testing.T, id string, body []byte, isJSON bool) {
 	data := string(body)
 	lines := strings.Split(strings.TrimSpace(data), "\n")
 
-	// empty line identifies the end of the HTTP header
-	for i, line := range lines {
-		if line == "" {
-			break
-		}
+	if config != nil {
+		// empty line identifies the end of the HTTP header
+		for i, line := range lines {
+			if line == "" {
+				break
+			}
 
-		headerItem := strings.Split(line, ":")
-		if def, ok := config.Defaults[headerItem[0]]; ok {
-			lines[i] = fmt.Sprintf("%s: %s", headerItem[0], def)
+			headerItem := strings.Split(line, ":")
+			if def, ok := config.Defaults[headerItem[0]]; ok {
+				lines[i] = fmt.Sprintf("%s: %s", headerItem[0], def)
+			}
 		}
 	}
 
