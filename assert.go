@@ -65,12 +65,15 @@ func assertHTTP(t *testing.T, id string, body []byte, isJSON bool) {
 		t.Fatal(err)
 	}
 
+	// according to RFC 2616 (section 2.2) the HTTP header line break is '\r\n',
+	// and to handle all lines equally the '\r' will be dropped.
 	data := string(body)
+	data = strings.Replace(data, "\r\n", "\n", -1)
 	lines := strings.Split(strings.TrimSpace(data), "\n")
 
 	if config != nil {
-		// empty line identifies the end of the HTTP header
 		for i, line := range lines {
+			// empty line identifies the end of the HTTP header
 			if line == "" {
 				break
 			}
