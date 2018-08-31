@@ -99,7 +99,7 @@ func (s snapshots) save() error {
 			return err
 		}
 
-		err = ioutil.WriteFile(path, data, os.ModePerm)
+		err = ioutil.WriteFile(path, data, 0666)
 		if err != nil {
 			return err
 		}
