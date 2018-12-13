@@ -27,12 +27,12 @@ func ExampleAssertReader() {
 	abide.AssertReader(t, "io reader", file)
 }
 
-func ExampleAssertableString() {
+func ExampleString() {
 	myString := "this is a string I want to snapshot"
 	abide.Assert(t, "assertable string", abide.String(myString))
 }
 
-func ExampleAssertableStruct() {
+func ExampleInterface() {
 	type MyStruct struct {
 		Field1 string
 		Field2 int64
