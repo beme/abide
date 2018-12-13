@@ -79,3 +79,4 @@ func TestAssertableInterface(t *testing.T) {
 		"string4",
 	}
 	abide.Assert(t, "assertable interface", abide.Interface(myStruct))
+}
