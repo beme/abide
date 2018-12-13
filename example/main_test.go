@@ -41,3 +41,23 @@ func TestReader(t *testing.T) {
 	res := w.Result()
 	abide.AssertReader(t, "reader", res.Body)
 }
+
+func TestAssertableString(t *testing.T) {
+	abide.Assert(t, "assertable string", abide.String("string to be asserted"))
+}
+
+func TestAssertableInterface(t *testing.T) {
+	type MyStruct struct {
+		Field1 string
+		Field2 int64
+		Field3 bool
+		field4 string
+	}
+	myStruct := MyStruct{
+		"String1",
+		1234567,
+		true,
+		"string4",
+	}
+	abide.Assert(t, "assertable interface", abide.Interface(myStruct))
+}

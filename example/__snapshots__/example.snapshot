@@ -1,3 +1,9 @@
+/* snapshot: assertable interface */
+main.MyStruct {Field1:String1 Field2:1234567 Field3:true field4:string4}
+
+/* snapshot: assertable string */
+string to be asserted
+
 /* snapshot: first route */
 HTTP/1.1 200 OK
 Connection: close
