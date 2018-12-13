@@ -26,3 +26,24 @@ func ExampleAssertReader() {
 	file, _ := os.Open("/path/to/file")
 	abide.AssertReader(t, "io reader", file)
 }
+
+func ExampleAssertableString() {
+	myString := "this is a string I want to snapshot"
+	abide.Assert(t, "assertable string", abide.String(myString))
+}
+
+func ExampleAssertableStruct() {
+	type MyStruct struct {
+		Field1 string
+		Field2 int64
+		Field3 bool
+		field4 string
+	}
+	myStruct := MyStruct{
+		"String1",
+		1234567,
+		true,
+		"string4",
+	}
+	abide.Assert(t, "assertable struct", abide.Struct(myStruct))
+}
