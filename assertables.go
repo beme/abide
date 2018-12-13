@@ -15,7 +15,8 @@ func String(s string) Assertable {
 	return assertableString(s)
 }
 
-// Struct is syntactic sugar. It is a helper that converts a struct to an Assertable.
-func Struct(s interface{}) Assertable {
-	return assertableString(fmt.Sprintf("%+v", s))
+// Interface is syntactic sugar. It is a helper that converts any type to an Assertable.
+func Interface(i interface{}) Assertable {
+	// include the type in the string that is asserted to avoid suprises
+	return assertableString(fmt.Sprintf("%T %+v", i, i))
 }

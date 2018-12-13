@@ -45,5 +45,5 @@ func ExampleAssertableStruct() {
 		true,
 		"string4",
 	}
-	abide.Assert(t, "assertable struct", abide.Struct(myStruct))
+	abide.Assert(t, "assertable struct", abide.Interface(myStruct))
 }
