@@ -27,23 +27,63 @@ func Assert(t *testing.T, id string, a Assertable) {
 
 // AssertHTTPResponse asserts the value of an http.Response.
 func AssertHTTPResponse(t *testing.T, id string, w *http.Response) {
-	config, err := getConfig()
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	body, err := httputil.DumpResponse(w, true)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	data := string(body)
+	assertHTTP(t, id, body, contentTypeIsJSON(w.Header.Get("Content-Type")))
+}
 
-	contentType := w.Header.Get("Content-Type")
+// AssertHTTPRequestOut asserts the value of an http.Request.
+// Intended for use when testing outgoing client requests
+// See https://golang.org/pkg/net/http/httputil/#DumpRequestOut for more
+func AssertHTTPRequestOut(t *testing.T, id string, r *http.Request) {
+	body, err := httputil.DumpRequestOut(r, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assertHTTP(t, id, body, contentTypeIsJSON(r.Header.Get("Content-Type")))
+}
+
+// AssertHTTPRequest asserts the value of an http.Request.
+// Intended for use when testing incoming client requests
+// See https://golang.org/pkg/net/http/httputil/#DumpRequest for more
+func AssertHTTPRequest(t *testing.T, id string, r *http.Request) {
+	body, err := httputil.DumpRequest(r, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assertHTTP(t, id, body, contentTypeIsJSON(r.Header.Get("Content-Type")))
+}
+
+func assertHTTP(t *testing.T, id string, body []byte, isJSON bool) {
+	config, err := getConfig()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	data := string(body)
+	lines := strings.Split(strings.TrimSpace(data), "\n")
+
+	if config != nil {
+		// empty line identifies the end of the HTTP header
+		for i, line := range lines {
+			if line == "" {
+				break
+			}
+
+			headerItem := strings.Split(line, ":")
+			if def, ok := config.Defaults[headerItem[0]]; ok {
+				lines[i] = fmt.Sprintf("%s: %s", headerItem[0], def)
+			}
+		}
+	}
 
 	// If the response body is JSON, indent.
-	if contentTypeIsJSON(contentType) {
-		lines := strings.Split(strings.TrimSpace(data), "\n")
+	if isJSON {
 		jsonStr := lines[len(lines)-1]
 
 		var jsonIface map[string]interface{}
@@ -64,9 +104,9 @@ func AssertHTTPResponse(t *testing.T, id string, w *http.Response) {
 			t.Fatal(err)
 		}
 		lines[len(lines)-1] = string(out)
-		data = strings.Join(lines, "\n")
 	}
 
+	data = strings.Join(lines, "\n")
 	createOrUpdateSnapshot(t, id, data)
 }
 
