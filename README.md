@@ -68,6 +68,12 @@ Content-Type: application/json
 }
 ```
 
+When working with snapshots in a git repository, you could face some end line replacements that can cause comparison issues (`warning: CRLF will be replaced by LF in ...`). To solve that just configure the snapshots as binary files in `.gitattributes` of your project root:
+
+```
+*.snapshot binary
+```
+
 `abide` also supports testing outside of http responses, by providing an `Assert(*testing.T, string, Assertable)` method which will create snapshots for any type that implements `String() string`.
 
 ## Example
