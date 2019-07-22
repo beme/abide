@@ -234,13 +234,10 @@ func writeSnapshot(id snapshotID, value string, isUpdate bool) (*snapshot, error
 	path := filepath.Join(dir, fmt.Sprintf("%s%s", pkg, snapshotExt))
 
 	s := &snapshot{
-		id:    id,
-		value: value,
-		path:  path,
-	}
-
-	if isUpdate {
-		s.evaluated = true
+		id:        id,
+		value:     value,
+		path:      path,
+		evaluated: isUpdate,
 	}
 
 	allSnapMutex.Lock()
