@@ -201,8 +201,18 @@ func getSnapshot(id snapshotID) *snapshot {
 	return allSnapshots[id]
 }
 
-// createSnapshot creates or updates a Snapshot.
+// createSnapshot creates a Snapshot.
 func createSnapshot(id snapshotID, value string) (*snapshot, error) {
+	return writeSnapshot(id, value, false)
+}
+
+// updateSnapshot creates a Snapshot.
+func updateSnapshot(id snapshotID, value string) (*snapshot, error) {
+	return writeSnapshot(id, value, true)
+}
+
+// writeSnapshot creates or updates a Snapshot.
+func writeSnapshot(id snapshotID, value string, isUpdate bool) (*snapshot, error) {
 	if !id.isValid() {
 		return nil, errInvalidSnapshotID
 	}
@@ -227,6 +237,10 @@ func createSnapshot(id snapshotID, value string) (*snapshot, error) {
 		id:    id,
 		value: value,
 		path:  path,
+	}
+
+	if isUpdate {
+		s.evaluated = true
 	}
 
 	allSnapMutex.Lock()

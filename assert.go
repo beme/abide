@@ -160,7 +160,7 @@ func createOrUpdateSnapshot(t *testing.T, id, data string) {
 	if diff != "" {
 		if snapshot != nil && args.shouldUpdate {
 			fmt.Printf("Updating snapshot `%s`\n", id)
-			_, err = createSnapshot(snapshotID(id), data)
+			_, err = updateSnapshot(snapshotID(id), data)
 			if err != nil {
 				t.Fatal(err)
 			}
