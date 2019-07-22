@@ -14,6 +14,7 @@ import (
 var (
 	args         *arguments
 	allSnapshots snapshots
+	allSnapMutex sync.Mutex
 )
 
 var (
@@ -227,7 +228,10 @@ func createSnapshot(id snapshotID, value string) (*snapshot, error) {
 		value: value,
 		path:  path,
 	}
+
+	allSnapMutex.Lock()
 	allSnapshots[id] = s
+	allSnapMutex.Unlock()
 
 	err = allSnapshots.save()
 	if err != nil {
