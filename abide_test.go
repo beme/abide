@@ -69,6 +69,46 @@ func TestCleanup(t *testing.T) {
 	}
 }
 
+func TestCleanupUpdate(t *testing.T) {
+	defer testingCleanup()
+
+	// this snapshot is updated, should be evaluated, and not removed
+	_ = testingSnapshot("1", "A")
+	t2 := &testing.T{}
+	createOrUpdateSnapshot(t2, "1", "B")
+
+	// this snapshot is never evaluated, and should be removed
+	_ = testingSnapshot("2", "B")
+
+	snapshot := getSnapshot("1")
+	if snapshot == nil {
+		t.Fatal("Expected snapshot[1] to exist.")
+	}
+
+	// If shouldUpdate = true and singleRun = false, the snapshot must be removed.
+	args.shouldUpdate = true
+	args.singleRun = false
+	err := Cleanup()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// call private reloadSnapshots to repeat once-executing function
+	err = reloadSnapshots()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	snapshot = getSnapshot("1")
+	if snapshot == nil {
+		t.Fatal("Expected snapshot[1] to exist.")
+	}
+	snapshot = getSnapshot("2")
+	if snapshot != nil {
+		t.Fatal("Expected snapshot[2] to be removed.")
+	}
+}
+
 func TestSnapshotIDIsValid(t *testing.T) {
 	id := snapshotID("1")
 	if !id.isValid() {

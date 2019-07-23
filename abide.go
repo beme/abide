@@ -14,6 +14,7 @@ import (
 var (
 	args         *arguments
 	allSnapshots snapshots
+	allSnapMutex sync.Mutex
 )
 
 var (
@@ -200,8 +201,18 @@ func getSnapshot(id snapshotID) *snapshot {
 	return allSnapshots[id]
 }
 
-// createSnapshot creates or updates a Snapshot.
+// createSnapshot creates a Snapshot.
 func createSnapshot(id snapshotID, value string) (*snapshot, error) {
+	return writeSnapshot(id, value, false)
+}
+
+// updateSnapshot creates a Snapshot.
+func updateSnapshot(id snapshotID, value string) (*snapshot, error) {
+	return writeSnapshot(id, value, true)
+}
+
+// writeSnapshot creates or updates a Snapshot.
+func writeSnapshot(id snapshotID, value string, isUpdate bool) (*snapshot, error) {
 	if !id.isValid() {
 		return nil, errInvalidSnapshotID
 	}
@@ -223,11 +234,15 @@ func createSnapshot(id snapshotID, value string) (*snapshot, error) {
 	path := filepath.Join(dir, fmt.Sprintf("%s%s", pkg, snapshotExt))
 
 	s := &snapshot{
-		id:    id,
-		value: value,
-		path:  path,
+		id:        id,
+		value:     value,
+		path:      path,
+		evaluated: isUpdate,
 	}
+
+	allSnapMutex.Lock()
 	allSnapshots[id] = s
+	allSnapMutex.Unlock()
 
 	err = allSnapshots.save()
 	if err != nil {
