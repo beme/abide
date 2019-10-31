@@ -4,6 +4,9 @@ main.MyStruct {Field1:String1 Field2:1234567 Field3:true field4:string4}
 /* snapshot: assertable string */
 string to be asserted
 
+/* snapshot: fifth route */
+485454502f312e3120323030204f4b0d0a436f6e6e656374696f6e3a20636c6f73650d0a436f6e74656e742d547970653a206170706c69636174696f6e2f7064660d0a0d0a0102030405060708090a
+
 /* snapshot: first route */
 HTTP/1.1 200 OK
 Connection: close

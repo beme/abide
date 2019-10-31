@@ -1,6 +1,7 @@
 package abide
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -32,7 +33,9 @@ func AssertHTTPResponse(t *testing.T, id string, w *http.Response) {
 		t.Fatal(err)
 	}
 
-	assertHTTP(t, id, body, contentTypeIsJSON(w.Header.Get("Content-Type")))
+	isJSON := contentTypeIsJSON(w.Header.Get("Content-Type"))
+	isBinary := contentTypeIsBinary(w.Header.Get("Content-Type"))
+	assertHTTP(t, id, body, isJSON, isBinary)
 }
 
 // AssertHTTPRequestOut asserts the value of an http.Request.
@@ -44,7 +47,9 @@ func AssertHTTPRequestOut(t *testing.T, id string, r *http.Request) {
 		t.Fatal(err)
 	}
 
-	assertHTTP(t, id, body, contentTypeIsJSON(r.Header.Get("Content-Type")))
+	isJSON := contentTypeIsJSON(r.Header.Get("Content-Type"))
+	isBinary := contentTypeIsBinary(r.Header.Get("Content-Type"))
+	assertHTTP(t, id, body, isJSON, isBinary)
 }
 
 // AssertHTTPRequest asserts the value of an http.Request.
@@ -56,16 +61,24 @@ func AssertHTTPRequest(t *testing.T, id string, r *http.Request) {
 		t.Fatal(err)
 	}
 
-	assertHTTP(t, id, body, contentTypeIsJSON(r.Header.Get("Content-Type")))
+	isJSON := contentTypeIsJSON(r.Header.Get("Content-Type"))
+	isBinary := contentTypeIsBinary(r.Header.Get("Content-Type"))
+	assertHTTP(t, id, body, isJSON, isBinary)
 }
 
-func assertHTTP(t *testing.T, id string, body []byte, isJSON bool) {
+func assertHTTP(t *testing.T, id string, body []byte, isJSON, isBinary bool) {
 	config, err := getConfig()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	data := string(body)
+	var data string
+	if isBinary {
+		data = hex.EncodeToString(body)
+	} else {
+		data = string(body)
+	}
+
 	lines := strings.Split(strings.TrimSpace(data), "\n")
 
 	if config != nil {
@@ -124,6 +137,14 @@ func contentTypeIsJSON(contentType string) bool {
 	isJSON := strings.HasSuffix(firstPart, "+json")
 
 	return isVendor && isJSON
+}
+
+func contentTypeIsBinary(contentType string) bool {
+	contentTypeParts := strings.Split(contentType, ";")
+	firstPart := contentTypeParts[0]
+
+	return firstPart == "application/pdf" ||
+		firstPart == "application/octet-stream"
 }
 
 // AssertReader asserts the value of an io.Reader.
