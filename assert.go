@@ -62,7 +62,7 @@ func AssertHTTPResponse(t *testing.T, id string, w *http.Response, opts ...func(
 
 	// keep backward compatibility checking for JSON type when the response type
 	// wasn't provided
-	if options.ContentType == ContentType("") && contentTypeIsJSON(r.Header.Get("Content-Type")) {
+	if options.ContentType == ContentType("") && contentTypeIsJSON(w.Header.Get("Content-Type")) {
 		options.ContentType = ContentTypeJSON
 	}
 	assertHTTP(t, id, body, options.ContentType)

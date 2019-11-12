@@ -39,7 +39,7 @@ func TestRequests(t *testing.T) {
 	w = httptest.NewRecorder()
 	fifthHandler(w, req)
 	res = w.Result()
-	abide.AssertHTTPResponse(t, "fifth route", res)
+	abide.AssertHTTPResponse(t, "fifth route", res, abide.SetContentType(abide.ContentTypeBinary))
 }
 
 func TestReader(t *testing.T) {
