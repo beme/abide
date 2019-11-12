@@ -61,10 +61,16 @@ func fourthHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(`Hello World.`))
 }
 
+func fifthHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/pdf")
+	w.Write([]byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
+}
+
 func main() {
 	http.HandleFunc("/first", firstHandler)
 	http.HandleFunc("/second", secondHandler)
 	http.HandleFunc("/third", thirdHandler)
 	http.HandleFunc("/fourth", fourthHandler)
+	http.HandleFunc("/fifth", fifthHandler)
 	http.ListenAndServe(":8080", nil)
 }
