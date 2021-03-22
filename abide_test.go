@@ -1,6 +1,7 @@
 package abide
 
 import (
+	"fmt"
 	"os"
 	"reflect"
 	"testing"
@@ -34,6 +35,8 @@ func TestCleanup(t *testing.T) {
 	_ = testingSnapshot("1", "A")
 
 	// If shouldUpdate = false, the snapshot must remain.
+	args.shouldUpdate = false
+	args.singleRun = false
 	err := Cleanup()
 	if err != nil {
 		t.Fatal(err)
@@ -53,6 +56,56 @@ func TestCleanup(t *testing.T) {
 	args.shouldUpdate = true
 	args.singleRun = false
 	err = Cleanup()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// call private reloadSnapshots to repeat once-executing function
+	err = reloadSnapshots()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	snapshot = getSnapshot("1")
+	if snapshot != nil {
+		t.Fatal("Expected snapshot[1] to be removed.")
+	}
+}
+
+func TestCleanupOrFail(t *testing.T) {
+	defer testingCleanup()
+
+	_ = testingSnapshot("1", "A")
+
+	args.shouldUpdate = false
+	args.singleRun = true
+	// singleRun means no cleanup
+	err := CleanupOrFail()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// shouldUpdate=false and singleRun=false -> CleanupOrFail fails
+	args.singleRun = false
+	err = CleanupOrFail()
+	if fmt.Sprint(err) != "1 unused snapshots" {
+		t.Fatalf("expected `1 unused snapshots`, got %v", err)
+	}
+
+	err = loadSnapshots()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	snapshot := getSnapshot("1")
+	if snapshot == nil {
+		t.Fatal("Expected snapshot[1] to exist.")
+	}
+
+	// If shouldUpdate = true and singleRun = false, the snapshot must be removed.
+	args.shouldUpdate = true
+	args.singleRun = false
+	err = CleanupOrFail()
 	if err != nil {
 		t.Fatal(err)
 	}

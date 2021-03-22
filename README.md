@@ -51,6 +51,19 @@ func TestMain(m *testing.M) {
 
 Once included, if the update `-u` flag is used when running tests, any snapshot that is no longer in use will be removed. Note: if a single test is run, pruning _will not occur_.
 
+Alternatively `CleanupOrFail` can be used to fail a test run if a snapshot needs cleaning up but the `-u` flag wasn't given (and it's not a single-test run):
+
+```go
+func TestMain(m *testing.M) {
+  if m.Run() == 0 {
+    if err := abide.CleanupOrFail(); err != nil {
+      fmt.Fprintln(os.Stderr, err.Error())
+      os.Exit(1)
+    }
+  }
+}
+```
+
 ## Snapshots
 
 A snapshot is essentially a lock file for an http response. Instead of having to manually compare every aspect of an http response to it's expected value, it can be automatically generated and used for matching in subsequent testing.
