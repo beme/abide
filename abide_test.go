@@ -22,7 +22,7 @@ func testingSnapshot(id, value string) *snapshot {
 func testingSnapshots(count int) snapshots {
 	s := make(snapshots, count)
 	for i := 0; i < count; i++ {
-		id := string(i)
+		id := string(rune(i))
 		s[snapshotID(id)] = testingSnapshot(id, id)
 	}
 	return s
