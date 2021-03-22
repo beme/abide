@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -11,9 +12,12 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	exit := m.Run()
-	abide.Cleanup()
-	os.Exit(exit)
+	if m.Run() == 0 {
+		if err := abide.CleanupOrFail(); err != nil {
+			fmt.Fprintln(os.Stderr, err.Error())
+			os.Exit(1)
+		}
+	}
 }
 
 func TestRequests(t *testing.T) {
